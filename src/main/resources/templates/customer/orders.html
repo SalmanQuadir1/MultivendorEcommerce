@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Your Orders</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="container mt-4 mb-5">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="#" class="amz-link">Your Account</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Your Orders</li>
+      </ol>
+    </nav>
+
+    <h2 class="mb-4">Your Orders</h2>
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+    
+    <div th:if="${orders.empty}" class="py-5 text-center bg-white border rounded">
+        <h4>You have not placed any orders.</h4>
+        <p class="text-muted"><a th:href="@{/products}" class="amz-link">Start Shopping</a></p>
+    </div>
+    
+    <div th:if="${!orders.empty}">
+        <div th:each="order : ${orders}" class="card mb-4 border-0 shadow-sm" style="border: 1px solid #D5D9D9 !important; border-radius: 8px;">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center py-3" style="border-bottom: 1px solid #D5D9D9;">
+                <div class="d-flex gap-5 text-muted small">
+                    <div>
+                        <div class="text-uppercase mb-1">Order Placed</div>
+                        <div class="fw-bold text-dark" th:text="${#temporals.format(order.createdAt, 'd MMMM yyyy')}">Date</div>
+                    </div>
+                    <div>
+                        <div class="text-uppercase mb-1">Total</div>
+                        <div class="fw-bold text-dark">₹<span th:text="${order.totalAmount}">0.00</span></div>
+                    </div>
+                    <div>
+                        <div class="text-uppercase mb-1">Ship To</div>
+                        <div class="fw-bold text-dark amz-link" th:text="${order.user.fullName}">User</div>
+                    </div>
+                </div>
+                <div class="text-end small">
+                    <div class="text-uppercase mb-1 text-muted">Order # <span th:text="${order.id}">1</span></div>
+                    <span th:with="itemsNameList=${#strings.listJoin(order.items.![product.name], ', ')}">
+                        <a href="#" class="amz-link fw-bold">View order details</a> | 
+                        <a href="#" class="amz-link fw-bold">Invoice</a> | 
+                        <a href="javascript:void(0);" 
+                           th:attr="data-id=${order.id},data-amount=${order.totalAmount},data-status=${order.status.name()},data-items=${itemsNameList}"
+                           onclick="shareOrder(this.getAttribute('data-id'), this.getAttribute('data-amount'), this.getAttribute('data-status'), this.getAttribute('data-items'))" 
+                           class="amz-link fw-bold text-success">
+                            <i class="bi bi-whatsapp"></i> Share
+                        </a>
+                    </span>
+                </div>
+            </div>
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-3">
+                    <span th:class="${order.status.name() == 'PAID' ? 'text-success' : 'text-warning'}">
+                        <i class="bi bi-check-circle-fill" th:if="${order.status.name() == 'PAID'}"></i>
+                        <span th:text="${order.status.name() == 'PAID' ? 'Paid & Processing' : 'Pending Payment'}">Status</span>
+                    </span>
+                </h5>
+                <div th:if="${order.status.name() != 'PAID'}" class="alert alert-warning border-0 shadow-sm py-2.5 px-3 small d-flex align-items-center justify-content-between mt-2 mb-3" style="border-radius: 8px; background-color: #fffbeb;">
+                    <span class="text-dark"><i class="bi bi-exclamation-triangle-fill text-warning me-1"></i> Did your money get deducted but the order is still shown as Pending?</span>
+                    <button type="button" class="btn btn-warning btn-sm fw-bold rounded-pill px-3 shadow-sm text-white border-0" th:onclick="'openDisputeModal(' + ${order.id} + ')'" style="background-color: #fb641b;">Report Dispute</button>
+                </div>
+                <div th:each="item : ${order.items}" class="row mb-3 pb-3 border-bottom border-light">
+                    <div class="col-md-2">
+                        <img th:src="@{${item.product.imageUrl != null ? item.product.imageUrl : '/images/placeholder.png'}}" style="width: 90px; height: 90px; object-fit: contain;" class="border">
+                    </div>
+                    <div class="col-md-7">
+                        <a th:href="@{'/products/' + ${item.product.id}}" class="amz-link fw-bold text-dark" th:text="${item.product.name}">Product Name</a>
+                        <div class="small text-muted mt-1">Sold by: <span th:text="${item.product.vendor != null ? item.product.vendor.fullName : 'OrganicWorld'}">Vendor</span></div>
+                        <div class="small text-muted mt-1">₹<span th:text="${item.price}">0</span> - Qty: <span th:text="${item.quantity}">1</span></div>
+                        
+                        <div class="mt-3">
+                            <button class="btn amz-btn-primary btn-sm rounded-pill px-3 shadow-sm me-2">Buy it again</button>
+                            <button class="btn border btn-sm rounded-pill px-3 shadow-sm bg-white">View your item</button>
+                        </div>
+                    </div>
+                    <div class="col-md-3 text-end">
+                        <button class="btn border w-100 rounded-pill shadow-sm bg-white mb-2 py-1">Track package</button>
+                        <button class="btn border w-100 rounded-pill shadow-sm bg-white mb-2 py-1">Write a product review</button>
+                    </div>
+                </div>
+                <a href="#" class="amz-link small fw-bold text-decoration-none">Archive order</a>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div th:if="${!orders.empty}" class="mt-4 d-flex justify-content-center">
+            <nav aria-label="Order pagination">
+                <ul class="pagination">
+                    <li class="page-item" th:classappend="${orders.hasPrevious()} ? '' : 'disabled'">
+                        <a class="page-link" th:href="${orders.hasPrevious()} ? @{/customer/orders(page=${orders.number - 1}, size=${orders.size})} : '#'" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(0, orders.totalPages - 1)}" th:if="${i >= orders.number - 2 and i <= orders.number + 2}" th:classappend="${i == orders.number} ? 'active' : ''">
+                        <a class="page-link" th:href="@{/customer/orders(page=${i}, size=${orders.size})}" th:text="${i + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${orders.hasNext()} ? '' : 'disabled'">
+                        <a class="page-link" th:href="${orders.hasNext()} ? @{/customer/orders(page=${orders.number + 1}, size=${orders.size})} : '#'" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script>
+    function shareOrder(orderId, amount, status, itemsStr) {
+        const text = `🌿 *OrganicWorld Order Details* 🌿\n\n📦 *Order ID:* #${orderId}\n💰 *Amount Paid:* ₹${amount}\n📌 *Status:* ${status}\n🛍️ *Items:* ${itemsStr}\n\nThank you for shopping with OrganicWorld! ✨`;
+        
+        if (navigator.share) {
+            navigator.share({
+                title: 'OrganicWorld Order Details',
+                text: text,
+                url: window.location.origin
+            }).catch(console.error);
+        } else {
+            const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+    }
+</script>
+<!-- Dispute Modal -->
+<div class="modal fade" id="disputeModal" tabindex="-1" aria-labelledby="disputeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
+            <div class="modal-header border-bottom pb-2">
+                <h5 class="modal-title fw-bold text-danger" id="disputeModalLabel"><i class="bi bi-shield-exclamation"></i> Report Payment Dispute</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="disputeForm">
+                <input type="hidden" id="disputeOrderId" name="orderId">
+                <div class="modal-body py-3">
+                    <p class="small text-muted mb-3">If money was debited from your account but your order status is still "Pending Payment", please provide the Razorpay Payment ID or transaction reference below. We will verify and approve your order immediately.</p>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Razorpay Payment ID / Bank Ref No.</label>
+                        <input type="text" class="form-control" name="razorpayPaymentId" required placeholder="e.g. pay_Ok9as8df23 or Bank Txn ID" style="border-radius: 8px;">
+                    </div>
+                </div>
+                <div class="modal-footer border-top pt-2">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4 btn-sm fw-bold" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 btn-sm fw-bold border-0" style="background-color: #fb641b;">Submit Dispute</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    let disputeModalInstance = null;
+    function openDisputeModal(orderId) {
+        document.getElementById('disputeOrderId').value = orderId;
+        if (!disputeModalInstance) {
+            disputeModalInstance = new bootstrap.Modal(document.getElementById('disputeModal'));
+        }
+        disputeModalInstance.show();
+    }
+
+    document.getElementById('disputeForm').onsubmit = function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        
+        fetch('/checkout/dispute', {
+            method: 'POST',
+            body: new URLSearchParams(formData)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert('Dispute reported successfully! Our administrators will review the payment and approve your order shortly.');
+                disputeModalInstance.hide();
+                window.location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Error submitting dispute.');
+        });
+    };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

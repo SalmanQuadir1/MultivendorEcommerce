@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Categories | OrganicWorld</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary: #2874f0;
+            --primary-light: rgba(40, 116, 240, 0.08);
+            --success: #10b981;
+            --success-light: rgba(16, 185, 129, 0.08);
+            --danger: #ef4444;
+            --danger-light: rgba(239, 68, 68, 0.08);
+            --dark: #0f172a;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+
+
+        /* Main Panel */
+        .main-content {
+            margin-left: 280px;
+            flex-grow: 1;
+            padding: 40px;
+            background-color: #f8fafc;
+            min-height: 100vh;
+        }
+
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 35px;
+        }
+
+        .glass-card {
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+        }
+
+        /* Table */
+        .table-modern {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+
+        .table-modern th {
+            color: #64748b;
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: none;
+            padding: 12px 20px;
+        }
+
+        .table-modern tbody tr {
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.01);
+            transition: all 0.25s ease;
+        }
+
+        .table-modern tbody tr:hover {
+            transform: scale(1.005);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        }
+
+        .table-modern td {
+            padding: 18px 20px;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+        }
+
+        .table-modern td:first-child {
+            border-left: 1px solid var(--border-color);
+            border-top-left-radius: 12px;
+            border-bottom-left-radius: 12px;
+        }
+
+        .table-modern td:last-child {
+            border-right: 1px solid var(--border-color);
+            border-top-right-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+
+        .modern-badge {
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge-primary { background: var(--primary-light); color: var(--primary); }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    <!-- Left Sidebar -->
+    <!-- Uniform Architecture Sidebar -->
+    <div th:replace="~{fragments/admin_sidebar :: sidebar('categories')}"></div>
+
+    <!-- Main Content Panel -->
+    <main class="main-content">
+        <!-- Top Header Bar -->
+        <header class="top-header">
+            <div>
+                <h1 class="fw-extrabold text-dark m-0 fs-3" style="font-weight: 800; letter-spacing: -0.5px;">Manage Categories</h1>
+                <p class="text-muted small m-0">Categorize products to improve navigation and search discovery.</p>
+            </div>
+            
+            <div>
+                <a th:href="@{/admin/categories/new}" class="btn btn-primary fw-bold px-4 rounded-3"><i class="bi bi-plus-lg me-1"></i> Add New Category</a>
+            </div>
+        </header>
+
+        <!-- Category List Card -->
+        <div class="glass-card p-4">
+            <div class="table-responsive">
+                <table class="table-modern">
+                    <thead>
+                        <tr>
+                            <th>Category ID</th>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="category : ${categories}">
+                            <td><strong th:text="${'#CAT-' + category.id}">#CAT-1</strong></td>
+                            <td>
+                                <span class="modern-badge badge-primary fw-bold" th:text="${category.name}">Name</span>
+                            </td>
+                            <td th:text="${category.description}">Description</td>
+                            <td class="text-end">
+                                <a th:href="@{'/admin/categories/edit/' + ${category.id}}" class="btn btn-outline-secondary btn-sm px-3 rounded-3 me-1">Edit</a>
+                                <a th:href="@{'/admin/categories/delete/' + ${category.id}}" class="btn btn-outline-danger btn-sm px-3 rounded-3" onclick="return confirm('Are you sure you want to delete this category?');">Delete</a>
+                            </td>
+                        </tr>
+                        <tr th:if="${categories.empty}">
+                            <td colspan="4" class="text-center py-4 text-muted">No categories found. Create one to get started.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <!-- Pagination -->
+            <div th:replace="~{fragments/pagination :: pagination(pagedData=${categories}, baseUrl='/admin/categories', pageParam='page', sizeParam='size')}"></div>
+        </div>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

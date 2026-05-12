@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OrganicWorld - Premium Organic Dry Fruits & Wellness Products</title>
+    <meta name="description" content="Discover premium organic dry fruits, nuts, and wellness products. Shop fresh, authentic, and sustainably sourced natural foods for a healthier lifestyle.">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        :root {
+            --primary-green: #15803d;
+            --light-green: #dcfce7;
+            --dark-green: #166534;
+            --accent-yellow: #fbbf24;
+            --text-dark: #1f2937;
+            --text-light: #6b7280;
+            --border-color: #e5e7eb;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+            font-family: 'Outfit', sans-serif;
+            color: var(--text-dark);
+        }
+
+        /* Hero Carousel */
+        .hero-carousel {
+            position: relative;
+            overflow: hidden;
+            height: 92vh;
+            min-height: 520px;
+            max-height: 780px;
+            margin-top: -1px;
+        }
+
+        .hero-carousel .carousel-item {
+            height: 100%;
+            position: relative;
+        }
+
+        .hero-carousel .carousel-item::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                to right,
+                rgba(0,0,0,0.72) 0%,
+                rgba(0,0,0,0.45) 50%,
+                rgba(0,0,0,0.10) 100%
+            );
+            z-index: 1;
+        }
+
+        .hero-carousel img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scale(1.04);
+            transition: transform 8s ease;
+        }
+        .hero-carousel .carousel-item.active img { transform: scale(1.0); }
+
+        .hero-content {
+            position: absolute;
+            top: 50%;
+            left: 8%;
+            transform: translateY(-50%);
+            text-align: left;
+            color: white;
+            z-index: 2;
+            max-width: 580px;
+        }
+
+        .hero-eyebrow {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #86efac;
+            margin-bottom: 14px;
+            display: block;
+        }
+
+        .hero-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.2rem, 5vw, 4rem);
+            font-weight: 800;
+            margin-bottom: 1rem;
+            line-height: 1.12;
+            text-shadow: 0 2px 20px rgba(0,0,0,0.4);
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1rem, 2vw, 1.2rem);
+            margin-bottom: 2.2rem;
+            font-weight: 400;
+            opacity: 0.90;
+            line-height: 1.6;
+        }
+
+        .hero-btn-wrap { display: flex; gap: 14px; flex-wrap: wrap; }
+
+        .hero-btn {
+            background: #16a34a;
+            color: #fff;
+            border: 2px solid #16a34a;
+            padding: 14px 36px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1rem;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 24px rgba(22,163,74,0.45);
+        }
+
+        .hero-btn:hover {
+            background: #fff;
+            color: #16a34a;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(22,163,74,0.5);
+        }
+
+        .hero-btn-outline {
+            background: transparent;
+            color: #fff;
+            border: 2px solid rgba(255,255,255,0.7);
+            padding: 14px 36px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(4px);
+        }
+
+        .hero-btn-outline:hover {
+            background: rgba(255,255,255,0.15);
+            border-color: #fff;
+            color: #fff;
+        }
+
+        /* Carousel indicators */
+        .hero-carousel .carousel-indicators [data-bs-target] {
+            width: 10px; height: 10px; border-radius: 50%;
+            background: rgba(255,255,255,0.5); border: none;
+            transition: all .3s;
+        }
+        .hero-carousel .carousel-indicators .active {
+            background: #16a34a; width: 28px; border-radius: 5px;
+        }
+
+        .hero-btn:hover {
+            background: var(--primary-green);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(21, 128, 61, 0.3);
+        }
+
+        /* Category Grid */
+        .categories-section {
+            padding: 5rem 0;
+            background: white;
+        }
+
+        .category-card {
+            text-align: center;
+            padding: 2rem;
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: var(--text-dark);
+            border: 1px solid var(--border-color);
+            background: white;
+        }
+
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-green);
+        }
+
+        .category-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--light-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 2rem;
+            color: var(--primary-green);
+        }
+
+        .category-title {
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .category-desc {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        /* Product Sections */
+        .products-section {
+            padding: 5rem 0;
+            background: #f8fafc;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+        }
+
+        .section-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-green);
+        }
+
+        .product-image {
+            position: relative;
+            height: 250px;
+            overflow: hidden;
+            background: #f8fafc;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .product-card:hover .product-image img {
+            transform: scale(1.05);
+        }
+
+        .wishlist-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ef4444;
+            font-size: 1.2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            z-index: 2;
+        }
+
+        .wishlist-btn:hover {
+            background: #ef4444;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .product-info {
+            padding: 1.5rem;
+        }
+
+        .product-category {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--primary-green);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .product-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.4;
+        }
+
+        .product-price {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--primary-green);
+            margin-bottom: 0.5rem;
+        }
+
+        .product-rating {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .rating-stars {
+            color: var(--accent-yellow);
+            margin-right: 0.5rem;
+        }
+
+        .rating-count {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .view-product-btn {
+            width: 100%;
+            background: var(--primary-green);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .view-product-btn:hover {
+            background: var(--dark-green);
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Stats Section */
+        .stats-section {
+            padding: 4rem 0;
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--dark-green) 100%);
+            color: white;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 5rem 0;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            text-align: center;
+        }
+
+        .cta-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+        }
+
+        .cta-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-light);
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-btn {
+            background: var(--primary-green);
+            color: white;
+            border: 2px solid var(--primary-green);
+            padding: 16px 40px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(21, 128, 61, 0.2);
+        }
+
+        .cta-btn:hover {
+            background: white;
+            color: var(--primary-green);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(21, 128, 61, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            .section-title {
+                font-size: 2rem;
+            }
+            .product-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <!-- Hero Carousel -->
+    <section class="hero-carousel">
+        <div th:if="${carouselItems != null and !carouselItems.empty}" id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel">
+            <div class="carousel-indicators">
+                <button th:each="slide, iterStat : ${carouselItems}"
+                        type="button"
+                        data-bs-target="#heroCarousel"
+                        th:data-bs-slide-to="${iterStat.index}"
+                        th:classappend="${iterStat.first} ? 'active' : ''"
+                        th:aria-current="${iterStat.first} ? 'true' : null"
+                        th:aria-label="'Slide ' + ${iterStat.count}"></button>
+            </div>
+            <div class="carousel-inner">
+                <div th:each="slide, iterStat : ${carouselItems}" th:classappend="${iterStat.first} ? 'carousel-item active' : 'carousel-item'">
+                    <img th:src="@{${slide.imageUrl}}" th:alt="${slide.title}" loading="lazy">
+                    <div class="hero-content">
+                        <span class="hero-eyebrow">100% Certified Organic</span>
+                        <h1 class="hero-title" th:text="${slide.title}">PREMIUM ORGANIC</h1>
+                        <p class="hero-subtitle" th:text="${slide.subtitle}">Experience the richest, natural-sun-dried flavor</p>
+                        <div class="hero-btn-wrap">
+                            <a th:href="${slide.actionUrl}" class="hero-btn">Shop Collection</a>
+                            <a href="/about" class="hero-btn-outline">Our Story</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+        </div>
+
+        <!-- Fallback for no carousel items -->
+        <div th:if="${carouselItems == null or carouselItems.empty}" class="carousel-item active">
+            <img src="https://images.unsplash.com/photo-1626351801418-22200373ef12?auto=format&fit=crop&w=1920&q=80" alt="Organic Products">
+            <div class="hero-content">
+                <span class="hero-eyebrow">100% Certified Organic</span>
+                <h1 class="hero-title">PREMIUM ORGANIC</h1>
+                <p class="hero-subtitle">Experience the richest, natural-sun-dried flavor direct from elite orchards.</p>
+                <div class="hero-btn-wrap">
+                    <a href="/products" class="hero-btn">Shop Collection</a>
+                    <a href="/about" class="hero-btn-outline">Our Story</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trust Strip -->
+    <div style="background:#fff;border-bottom:1px solid #e5e7eb;padding:16px 0;">
+        <div class="container">
+            <div class="row text-center g-2">
+                <div class="col-6 col-md-3 d-flex align-items-center justify-content-center gap-2">
+                    <i class="bi bi-truck fs-5 text-success"></i><span class="small fw-600">Free Delivery over ₹499</span>
+                </div>
+                <div class="col-6 col-md-3 d-flex align-items-center justify-content-center gap-2">
+                    <i class="bi bi-arrow-return-left fs-5 text-success"></i><span class="small fw-600">Easy 7-Day Returns</span>
+                </div>
+                <div class="col-6 col-md-3 d-flex align-items-center justify-content-center gap-2">
+                    <i class="bi bi-shield-check fs-5 text-success"></i><span class="small fw-600">100% Secure Payments</span>
+                </div>
+                <div class="col-6 col-md-3 d-flex align-items-center justify-content-center gap-2">
+                    <i class="bi bi-headset fs-5 text-success"></i><span class="small fw-600">24/7 Customer Support</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <!-- Categories Section -->
+        <section class="categories-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Shop by Category</h2>
+                    <p class="section-subtitle">Explore our wide range of premium organic products, carefully curated for quality and nutrition.</p>
+                </div>
+
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+                    <div th:each="category : ${categories}" class="col">
+                        <a th:href="@{/products(categoryId=${category.id})}" class="category-card">
+                            <div class="category-icon">
+                                <i class="bi bi-leaf"></i>
+                            </div>
+                            <h3 class="category-title" th:text="${category.name}">Category</h3>
+                            <p class="category-desc" th:text="${category.description != null ? category.description : 'Premium quality products'}">Description</p>
+                        </a>
+                    </div>
+
+
+                    <!-- Fallback categories if no categories exist -->
+                    <div th:if="${categories == null or categories.empty}" class="col">
+                        <a href="/products" class="category-card">
+                            <div class="category-icon">
+                                <i class="bi bi-tree"></i>
+                            </div>
+                            <h3 class="category-title">All Products</h3>
+                            <p class="category-desc">Browse our complete collection</p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- New Arrivals Section -->
+        <section class="products-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">New Arrivals</h2>
+                    <p class="section-subtitle">Discover our latest premium organic products, freshly sourced and carefully selected for quality.</p>
+                </div>
+
+                <div th:if="${newArrivals != null and !newArrivals.empty}" class="product-grid">
+                    <a th:each="product : ${newArrivals}" th:href="@{'/products/' + ${product.id}}" class="product-card">
+                        <div class="product-image">
+                            <button class="wishlist-btn"
+                                    th:data-product-id="${product.id}"
+                                    onclick="event.preventDefault(); event.stopPropagation(); toggleWishlist(this);">
+                                <i th:class="${wishlistedIds != null and #lists.contains(wishlistedIds, product.id)} ? 'bi bi-heart-fill' : 'bi bi-heart'"></i>
+                            </button>
+                            <img th:src="@{${product.imageUrl != null ? product.imageUrl : '/images/placeholder.png'}}"
+                                 th:alt="${product.name}" loading="lazy">
+                        </div>
+                        <div class="product-info">
+                            <div class="product-category" th:text="${product.category != null ? product.category.name : 'Organic'}">Category</div>
+                            <div class="product-name" th:text="${product.name}">Premium Almonds</div>
+                            <div class="product-rating">
+                                <div class="rating-stars">
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-half"></i>
+                                </div>
+                                <span class="rating-count">(4.5)</span>
+                            </div>
+                            <div class="product-price">₹<span th:text="${product.price != null ? #numbers.formatDecimal(product.price, 1, 'COMMA', 2, 'POINT') : '0'}">0</span></div>
+                        </div>
+                    </a>
+                </div>
+
+                <div th:if="${newArrivals == null or newArrivals.empty}" class="text-center py-5">
+                    <i class="bi bi-box-seam display-1 text-muted mb-3"></i>
+                    <h4 class="text-muted">New arrivals coming soon!</h4>
+                    <p class="text-muted">We're curating the finest organic products for you.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Best Sellers Section -->
+        <section class="products-section" style="background: white;">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Best Sellers</h2>
+                    <p class="section-subtitle">Customer favorites that deliver exceptional quality and taste. Trusted by thousands of health-conscious families.</p>
+                </div>
+
+                <div th:if="${bestSellers != null and !bestSellers.empty}" class="product-grid">
+                    <a th:each="product : ${bestSellers}" th:href="@{'/products/' + ${product.id}}" class="product-card">
+                        <div class="product-image">
+                            <button class="wishlist-btn"
+                                    th:data-product-id="${product.id}"
+                                    onclick="event.preventDefault(); event.stopPropagation(); toggleWishlist(this);">
+                                <i th:class="${wishlistedIds != null and #lists.contains(wishlistedIds, product.id)} ? 'bi bi-heart-fill' : 'bi bi-heart'"></i>
+                            </button>
+                            <img th:src="@{${product.imageUrl != null ? product.imageUrl : '/images/placeholder.png'}}"
+                                 th:alt="${product.name}" loading="lazy">
+                        </div>
+                        <div class="product-info">
+                            <div class="product-category" th:text="${product.category != null ? product.category.name : 'Organic'}">Category</div>
+                            <div class="product-name" th:text="${product.name}">Premium Almonds</div>
+                            <div class="product-rating">
+                                <div class="rating-stars">
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                </div>
+                                <span class="rating-count">(4.8)</span>
+                            </div>
+                            <div class="product-price">₹<span th:text="${#numbers.formatDecimal(product.price, 1, 'COMMA', 2, 'POINT')}">0</span></div>
+                        </div>
+                    </a>
+                </div>
+
+                <div th:if="${bestSellers == null or bestSellers.empty}" class="text-center py-5">
+                    <i class="bi bi-star display-1 text-muted mb-3"></i>
+                    <h4 class="text-muted">Best sellers loading...</h4>
+                    <p class="text-muted">Our most popular products will appear here soon.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Section -->
+        <section class="stats-section">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-3 col-6">
+                        <div class="stat-item">
+                            <span class="stat-number">10K+</span>
+                            <span class="stat-label">Happy Customers</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="stat-item">
+                            <span class="stat-number">500+</span>
+                            <span class="stat-label">Premium Products</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="stat-item">
+                            <span class="stat-number">50+</span>
+                            <span class="stat-label">Trusted Vendors</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="stat-item">
+                            <span class="stat-number">4.8★</span>
+                            <span class="stat-label">Average Rating</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Why Choose Us -->
+        <section style="padding:4rem 0;background:#f0fdf4;">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Why Choose OrganicWorld?</h2>
+                    <p class="section-subtitle">We're committed to bringing you the finest organic products with full transparency.</p>
+                </div>
+                <div class="row g-4 mt-2">
+                    <div class="col-md-3 col-6 text-center">
+                        <div style="width:70px;height:70px;background:#15803d;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px;color:#fff;">
+                            <i class="bi bi-award-fill"></i>
+                        </div>
+                        <h5 class="fw-bold">100% Organic</h5>
+                        <p class="text-muted small">Certified organic products sourced directly from trusted farms.</p>
+                    </div>
+                    <div class="col-md-3 col-6 text-center">
+                        <div style="width:70px;height:70px;background:#15803d;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px;color:#fff;">
+                            <i class="bi bi-box-seam-fill"></i>
+                        </div>
+                        <h5 class="fw-bold">Fresh Packaging</h5>
+                        <p class="text-muted small">Vacuum-sealed for maximum freshness and shelf life.</p>
+                    </div>
+                    <div class="col-md-3 col-6 text-center">
+                        <div style="width:70px;height:70px;background:#15803d;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px;color:#fff;">
+                            <i class="bi bi-currency-rupee"></i>
+                        </div>
+                        <h5 class="fw-bold">Best Prices</h5>
+                        <p class="text-muted small">Farm-to-home pricing. No middlemen, no markups.</p>
+                    </div>
+                    <div class="col-md-3 col-6 text-center">
+                        <div style="width:70px;height:70px;background:#15803d;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px;color:#fff;">
+                            <i class="bi bi-patch-check-fill"></i>
+                        </div>
+                        <h5 class="fw-bold">Quality Tested</h5>
+                        <p class="text-muted small">Each batch lab-tested for purity, nutrition, and safety.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Promo Banner -->
+        <section style="background:linear-gradient(135deg,#166534,#15803d);padding:40px 0;text-align:center;color:#fff;">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-8 text-md-start mb-3 mb-md-0">
+                        <h3 class="fw-800 mb-1">🎉 First Order Special — Get 20% OFF!</h3>
+                        <p class="mb-0 opacity-75">Use code <strong>ORGANIC20</strong> at checkout. Valid on orders above ₹499.</p>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <a href="/products" class="btn btn-light text-success fw-bold rounded-pill px-4 py-2">Shop Now →</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonials -->
+        <section style="padding:4rem 0;background:#fff;">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">What Our Customers Say</h2>
+                    <p class="section-subtitle">Real reviews from real organic food lovers.</p>
+                </div>
+                <div class="row g-4 mt-2">
+                    <div class="col-md-4">
+                        <div style="background:#f8fafc;border-radius:16px;padding:24px;border:1px solid #e5e7eb;height:100%;">
+                            <div class="text-warning mb-2">★★★★★</div>
+                            <p class="mb-3 text-muted">"The quality of almonds is exceptional. I can taste the difference from regular store-bought ones. Will definitely reorder!"</p>
+                            <div class="d-flex align-items-center gap-3">
+                                <div style="width:42px;height:42px;background:#15803d;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;">P</div>
+                                <div><div class="fw-bold small">Priya Sharma</div><div class="text-muted" style="font-size:12px;">Mumbai</div></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div style="background:#f8fafc;border-radius:16px;padding:24px;border:1px solid #e5e7eb;height:100%;">
+                            <div class="text-warning mb-2">★★★★★</div>
+                            <p class="mb-3 text-muted">"Fast delivery, fresh products, amazing packaging. OrganicWorld is my go-to for all dry fruits now."</p>
+                            <div class="d-flex align-items-center gap-3">
+                                <div style="width:42px;height:42px;background:#15803d;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;">R</div>
+                                <div><div class="fw-bold small">Rahul Verma</div><div class="text-muted" style="font-size:12px;">Delhi</div></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div style="background:#f8fafc;border-radius:16px;padding:24px;border:1px solid #e5e7eb;height:100%;">
+                            <div class="text-warning mb-2">★★★★☆</div>
+                            <p class="mb-3 text-muted">"Love the variety and the prices are unbeatable for organic products. Customer support was super helpful too."</p>
+                            <div class="d-flex align-items-center gap-3">
+                                <div style="width:42px;height:42px;background:#15803d;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;">A</div>
+                                <div><div class="fw-bold small">Ananya Nair</div><div class="text-muted" style="font-size:12px;">Bangalore</div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Newsletter -->
+        <section style="padding:3.5rem 0;background:#fef9c3;">
+            <div class="container text-center">
+                <h3 class="fw-bold mb-2">📬 Stay in the Loop</h3>
+                <p class="text-muted mb-4">Get exclusive deals, new arrivals, and health tips straight to your inbox.</p>
+                <form class="d-flex justify-content-center gap-2 flex-wrap" onsubmit="handleNewsletter(event)">
+                    <input type="email" placeholder="Enter your email address" required
+                           style="border:2px solid #15803d;border-radius:50px;padding:10px 24px;width:320px;outline:none;font-size:14px;">
+                    <button type="submit" style="background:#15803d;color:#fff;border:none;border-radius:50px;padding:10px 28px;font-weight:700;cursor:pointer;">
+                        Subscribe
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta-section">
+            <div class="container">
+                <h2 class="cta-title">Start Your Organic Journey Today</h2>
+                <p class="cta-subtitle">Join thousands of health-conscious families who trust OrganicWorld for premium organic products.</p>
+                <a href="/products" class="cta-btn">Explore All Products</a>
+                <div class="mt-3" sec:authorize="isAnonymous()">
+                    <a href="/register" class="text-success text-decoration-none small">New here? Create a free account →</a>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Wishlist toggle
+        function toggleWishlist(element) {
+            const productId = element.getAttribute('data-product-id');
+            const icon = element.querySelector('i');
+            fetch('/customer/wishlist/toggle/' + productId, { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        icon.className = data.added ? 'bi bi-heart-fill' : 'bi bi-heart';
+                        showToast(data.added ? '❤️ Added to wishlist' : 'Removed from wishlist');
+                    } else { window.location.href = '/login'; }
+                }).catch(() => { window.location.href = '/login'; });
+        }
+
+        // Newsletter
+        function handleNewsletter(e) {
+            e.preventDefault();
+            showToast('🎉 Thanks! You are now subscribed.');
+            e.target.reset();
+        }
+
+        // Toast helper
+        function showToast(msg) {
+            let c = document.getElementById('_tc');
+            if (!c) { c = document.createElement('div'); c.id = '_tc'; c.style = 'position:fixed;bottom:20px;right:20px;z-index:9999'; document.body.appendChild(c); }
+            const t = document.createElement('div');
+            t.className = 'alert alert-success shadow rounded-3 py-2 px-3 small mb-2 fade show';
+            t.textContent = msg;
+            c.appendChild(t);
+            setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 2500);
+        }
+
+        // Auto-play carousel
+        document.addEventListener('DOMContentLoaded', function() {
+            const carousel = document.querySelector('#heroCarousel');
+            if (carousel) new bootstrap.Carousel(carousel, { interval: 5000, ride: 'carousel' });
+        });
+    </script>
+</body>
+</html>

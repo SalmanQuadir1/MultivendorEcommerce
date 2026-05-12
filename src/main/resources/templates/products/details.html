@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${product.name} + ' - Buy Online at OrganicWorld'">Product Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        .detail-img {
+            max-height: 500px;
+            object-fit: cover;
+            width: 100%;
+        }
+        .detail-brand {
+            font-size: 24px;
+            font-weight: 700;
+            color: #282c3f;
+            margin-bottom: 5px;
+        }
+        .detail-name {
+            color: #535766;
+            font-size: 20px;
+            font-weight: 400;
+            margin-bottom: 15px;
+        }
+        .detail-price-box {
+            font-size: 24px;
+            font-weight: 700;
+            color: #282c3f;
+            margin-bottom: 5px;
+        }
+        .action-btns .btn {
+            padding: 15px;
+            font-size: 14px;
+            font-weight: 700;
+            border-radius: 4px;
+        }
+        .btn-wishlist {
+            border: 1px solid #d4d5d9;
+            color: #282c3f;
+            background: #fff;
+        }
+        .btn-wishlist:hover {
+            border-color: #282c3f;
+        }
+        
+        /* Star Rating Widget Styles */
+        .star-rating-input {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+        .star-rating-input input { display: none; }
+        .star-rating-input label {
+            font-size: 30px;
+            color: #e2e8f0;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        .star-rating-input input:checked ~ label {
+            color: #fbbf24;
+        }
+        .star-rating-input label:hover,
+        .star-rating-input label:hover ~ label {
+            color: #f59e0b;
+        }
+        
+        .review-card {
+            border-bottom: 1px solid #f1f5f9;
+            padding: 20px 0;
+        }
+        .review-card:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="container mt-4 px-4 bg-white mb-5">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb" style="font-size: 14px;">
+        <li class="breadcrumb-item"><a th:href="@{/}" class="text-dark text-decoration-none">Home</a></li>
+        <li class="breadcrumb-item"><a href="#" class="text-dark text-decoration-none" th:text="${product.category.name}">Category</a></li>
+        <li class="breadcrumb-item active text-truncate" style="max-width: 200px;" aria-current="page" th:text="${product.name}">Current</li>
+      </ol>
+    </nav>
+    <div class="row mt-3">
+        <!-- Left: Image -->
+        <div class="col-md-5">
+            <img th:src="@{${product.imageUrl != null ? product.imageUrl : '/images/placeholder.png'}}" class="img-fluid detail-img" alt="Product Image">
+        </div>
+        
+        <!-- Center: Details -->
+        <div class="col-md-7 px-4">
+            <h1 class="detail-brand" th:text="${product.name}">Product Name</h1>
+            <h2 class="detail-name" th:text="${product.vendor != null ? product.vendor.fullName : 'OrganicWorld'}">Brand Name</h2>
+            
+            <div class="d-flex align-items-center mb-3 border border-secondary rounded d-inline-block px-2 py-1" style="width: max-content;" th:if="${averageRating > 0}">
+                <span class="fw-bold me-1" th:text="${#numbers.formatDecimal(averageRating, 1, 1)}">4.2</span>
+                <i class="bi bi-star-fill text-success" style="font-size: 12px;"></i>
+                <span class="text-muted ms-2 ps-2 border-start" style="font-size: 12px;" th:text="${#lists.size(reviews)} + ' Ratings'">42 Ratings</span>
+            </div>
+            <div class="d-flex align-items-center mb-3 border border-secondary rounded d-inline-block px-2 py-1 opacity-50" style="width: max-content;" th:unless="${averageRating > 0}">
+                <span class="fw-bold me-1">New</span>
+                <i class="bi bi-star text-muted" style="font-size: 12px;"></i>
+                <span class="text-muted ms-2 ps-2 border-start" style="font-size: 12px;">No Ratings</span>
+            </div>
+            
+            <hr>
+            
+            <div class="detail-price-box">
+                Rs. <span id="display-price" th:text="${product.price}">0.00</span>
+            </div>
+            <p class="text-success fw-bold small mb-4">inclusive of all taxes</p>
+            
+            <div class="mb-4">
+                <h6 class="fw-bold mb-3">SELECT SIZE</h6>
+                <div class="d-flex gap-2" id="size-selector">
+                    <button type="button" 
+                            th:each="variant : ${product.variants}"
+                            th:text="${variant.size}"
+                            th:data-variant-id="${variant.id}"
+                            th:data-stock="${variant.stock}"
+                            th:data-price="${variant.price}"
+                            th:classappend="${variant.stock == 0 ? 'disabled text-decoration-line-through text-muted' : ''}"
+                            class="btn btn-outline-secondary size-btn" 
+                            style="min-width: 45px; height: 45px; border-radius: 4px; font-weight: 700; font-size: 14px;">
+                        S
+                    </button>
+                </div>
+                <div class="text-danger small mt-2" id="size-error" style="display: none;">Please select a size</div>
+            </div>
+            
+            <div class="action-btns d-flex gap-3 mb-4" th:if="${not #lists.isEmpty(product.variants)}">
+                <form th:action="@{/cart/add}" method="post" class="flex-grow-1" id="add-to-cart-form">
+                    <input type="hidden" name="variantId" id="selected-variant-id">
+                    <input type="hidden" name="quantity" value="1">
+                    <button type="submit" class="btn amz-btn-primary w-100"><i class="bi bi-bag me-2"></i> ADD TO BAG</button>
+                </form>
+                <button type="button" id="details-wishlist-btn" 
+                        th:data-product-id="${product.id}"
+                        th:classappend="${isWishlisted} ? 'active text-danger border-danger' : ''"
+                        onclick="toggleDetailsWishlist(this);"
+                        class="btn btn-wishlist flex-grow-1">
+                    <i th:class="${isWishlisted} ? 'bi bi-heart-fill me-2' : 'bi bi-heart me-2'"></i> 
+                    <span th:text="${isWishlisted} ? 'WISHLISTED' : 'WISHLIST'">WISHLIST</span>
+                </button>
+            </div>
+            
+            <div class="alert alert-danger" th:if="${#lists.isEmpty(product.variants)}">
+                This item is currently out of stock.
+            </div>
+            
+            <hr>
+            
+            <div class="mt-4">
+                <h6 class="fw-bold mb-3 d-flex align-items-center"><i class="bi bi-truck fs-5 me-2"></i> DELIVERY OPTIONS</h6>
+                <div class="input-group mb-2" style="max-width: 320px;">
+                    <input type="text" id="pincode-input" class="form-control" placeholder="Enter 6-digit pincode" maxlength="6">
+                    <button id="pincode-check-btn" class="btn btn-outline-secondary fw-bold" type="button" style="color: #ff3f6c; border-color: #d4d5d9;">Check</button>
+                </div>
+                <p class="small text-muted mb-1">Please enter PIN code to check delivery time & Pay on Delivery Availability</p>
+                
+                <div id="pincode-result" class="mt-3 p-3 rounded-3" style="display: none; background-color: #f8fafc; border: 1px solid #f1f5f9; max-width: 320px;"></div>
+
+                <ul class="list-unstyled mt-3 lh-lg text-dark small">
+                    <li><i class="bi bi-patch-check-fill text-success me-2"></i>100% Original Products</li>
+                    <li><i class="bi bi-arrow-repeat text-success me-2"></i>Easy 14 days returns and exchanges</li>
+                </ul>
+            </div>
+
+            <hr>
+
+            <hr>
+
+            <div class="mt-4">
+                <h6 class="fw-bold mb-3">PRODUCT DETAILS</h6>
+                <p th:text="${product.description}" class="text-muted small lh-lg">Product description goes here...</p>
+                <div class="small mt-3">
+                    <span class="fw-bold">Product Code:</span> <span th:text="${product.id}"></span><br>
+                    <span class="fw-bold">Sold by:</span> <span class="fw-bold" style="color: #ff3f6c;" th:text="${product.vendor != null ? product.vendor.fullName : 'OrganicWorld'}">Vendor</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-5">
+
+    <!-- Reviews and Ratings Section -->
+    <div class="row mb-5">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-bold">Customer Reviews</h4>
+                
+                <div class="d-flex align-items-center gap-2" th:if="${averageRating > 0}">
+                    <h2 class="mb-0 fw-bold" th:text="${#numbers.formatDecimal(averageRating, 1, 1)}">4.0</h2>
+                    <div class="text-warning">
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                    <div class="text-muted small" th:text="'(Out of ' + ${#lists.size(reviews)} + ' reviews)'"></div>
+                </div>
+            </div>
+
+            <!-- Review Form (Logged-in users only) -->
+            <div sec:authorize="isAuthenticated()" class="card shadow-sm border-0 mb-5" style="background-color: #f8fafc;">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3">Write a Review</h6>
+                    <form id="review-form">
+                        <input type="hidden" id="review-product-id" th:value="${product.id}">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">YOUR RATING</label>
+                            <div class="star-rating-input">
+                                <input type="radio" id="star5" name="rating" value="5" /><label for="star5" title="5 stars"><i class="bi bi-star-fill"></i></label>
+                                <input type="radio" id="star4" name="rating" value="4" /><label for="star4" title="4 stars"><i class="bi bi-star-fill"></i></label>
+                                <input type="radio" id="star3" name="rating" value="3" /><label for="star3" title="3 stars"><i class="bi bi-star-fill"></i></label>
+                                <input type="radio" id="star2" name="rating" value="2" /><label for="star2" title="2 stars"><i class="bi bi-star-fill"></i></label>
+                                <input type="radio" id="star1" name="rating" value="1" /><label for="star1" title="1 star"><i class="bi bi-star-fill"></i></label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="reviewComment" class="form-label small fw-bold text-muted">YOUR FEEDBACK</label>
+                            <textarea class="form-control border-0 shadow-sm" id="reviewComment" rows="3" placeholder="Share details of your experience with this product..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-dark rounded-3 fw-bold px-4">Submit Review</button>
+                    </form>
+                </div>
+            </div>
+
+            <div sec:authorize="!isAuthenticated()" class="alert alert-light border mb-5 text-center py-4">
+                <p class="mb-2 text-muted">Please sign in to leave your feedback for this product.</p>
+                <a th:href="@{/login}" class="btn btn-sm btn-outline-dark fw-bold px-3">Log In to Review</a>
+            </div>
+
+            <!-- Existing Reviews Display -->
+            <div id="reviews-container">
+                <div th:each="review : ${reviews}" class="review-card">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="badge bg-success d-inline-flex align-items-center gap-1 rounded-pill">
+                                <span th:text="${review.rating}">5</span> <i class="bi bi-star-fill" style="font-size: 10px;"></i>
+                            </div>
+                            <span class="fw-bold text-dark" th:text="${review.user.fullName}">Customer Name</span>
+                        </div>
+                        <span class="text-muted small" th:text="${#temporals.format(review.createdAt, 'dd MMM yyyy')}">Date</span>
+                    </div>
+                    <p class="text-muted mb-0 mt-2 ps-1" th:text="${review.comment}">Excellent taste and well packaged!</p>
+                </div>
+
+                <div th:if="${reviews.empty}" class="text-center py-5 text-muted bg-light rounded">
+                    <i class="bi bi-chat-square-text display-6 mb-3"></i>
+                    <p class="mb-0">No reviews yet. Be the first to review this product!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const sizeBtns = document.querySelectorAll('.size-btn');
+        const variantInput = document.getElementById('selected-variant-id');
+        const form = document.getElementById('add-to-cart-form');
+        const errorDiv = document.getElementById('size-error');
+
+        sizeBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (this.classList.contains('disabled')) return;
+                
+                // Clear active states
+                sizeBtns.forEach(b => {
+                    b.classList.remove('btn-dark', 'text-white');
+                    b.classList.add('btn-outline-secondary');
+                });
+                // Set active state
+                this.classList.remove('btn-outline-secondary');
+                this.classList.add('btn-dark', 'text-white');
+                // Set variant ID
+                variantInput.value = this.getAttribute('data-variant-id');
+                errorDiv.style.display = 'none';
+
+                // Update Display Price dynamically
+                const priceVal = this.getAttribute('data-price');
+                if (priceVal) {
+                    document.getElementById('display-price').textContent = parseFloat(priceVal).toFixed(2);
+                }
+            });
+        });
+
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                if (!variantInput.value) {
+                    e.preventDefault();
+                    errorDiv.style.display = 'block';
+                }
+            });
+        }
+
+        // Auto-select first non-disabled size button by default
+        const firstActiveBtn = Array.from(sizeBtns).find(btn => !btn.classList.contains('disabled'));
+        if (firstActiveBtn) {
+            firstActiveBtn.click();
+        }
+
+        // Functional Pincode Checker Logic
+        const pincodeInput = document.getElementById('pincode-input');
+        const pincodeBtn = document.getElementById('pincode-check-btn');
+        const pincodeResult = document.getElementById('pincode-result');
+
+        pincodeBtn.addEventListener('click', function() {
+            const pin = pincodeInput.value.trim();
+            pincodeResult.style.display = 'block';
+
+            if (!/^\d{6}$/.test(pin)) {
+                pincodeResult.style.borderColor = '#fee2e2';
+                pincodeResult.style.backgroundColor = '#fef2f2';
+                pincodeResult.innerHTML = `
+                    <div class="d-flex align-items-center gap-2 text-danger fw-bold mb-1 small">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <span>Invalid Pincode</span>
+                    </div>
+                    <div class="text-muted small">Please enter a valid 6-digit numeric PIN code.</div>
+                `;
+                return;
+            }
+
+            // Define deliverability
+            const startsWith = pin.substring(0, 3);
+            const isExpressCity = ['110', '400', '560', '600', '700', '201', '122', '380', '500'].some(prefix => pin.startsWith(prefix));
+            const isNonDeliverable = pin.startsWith('9') || pin.startsWith('0');
+
+            if (isNonDeliverable) {
+                pincodeResult.style.borderColor = '#fee2e2';
+                pincodeResult.style.backgroundColor = '#fef2f2';
+                pincodeResult.innerHTML = `
+                    <div class="d-flex align-items-center gap-2 text-danger fw-bold mb-1 small">
+                        <i class="bi bi-x-circle-fill"></i>
+                        <span>Not Deliverable</span>
+                    </div>
+                    <div class="text-muted small">We apologize, but organic gourmet delivery is not available for PIN <strong>${pin}</strong>.</div>
+                `;
+            } else if (isExpressCity) {
+                pincodeResult.style.borderColor = '#dcfce7';
+                pincodeResult.style.backgroundColor = '#f0fdf4';
+                pincodeResult.innerHTML = `
+                    <div class="d-flex align-items-center gap-2 text-success fw-bold mb-2 small">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span>Deliverable to ${pin}</span>
+                    </div>
+                    <div class="text-dark small lh-base">
+                        <div class="mb-1"><i class="bi bi-lightning-charge-fill text-warning me-1"></i><strong>Express Delivery:</strong> Delivered by tomorrow!</div>
+                        <div><i class="bi bi-cash me-1"></i>Pay on Delivery available</div>
+                    </div>
+                `;
+            } else {
+                pincodeResult.style.borderColor = '#e0f2fe';
+                pincodeResult.style.backgroundColor = '#f0f9ff';
+                pincodeResult.innerHTML = `
+                    <div class="d-flex align-items-center gap-2 text-primary fw-bold mb-2 small">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span>Deliverable to ${pin}</span>
+                    </div>
+                    <div class="text-dark small lh-base">
+                        <div class="mb-1"><i class="bi bi-calendar-event me-1"></i><strong>Standard Delivery:</strong> Delivered in 2-4 business days.</div>
+                        <div><i class="bi bi-cash me-1"></i>Pay on Delivery available</div>
+                    </div>
+                `;
+            }
+        });
+
+        // Add Enter Key Support to pincode input field
+        pincodeInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                pincodeBtn.click();
+            }
+        });
+
+        // --- New: Review Submission Logic ---
+        const reviewForm = document.getElementById('review-form');
+        if (reviewForm) {
+            reviewForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const productId = document.getElementById('review-product-id').value;
+                const comment = document.getElementById('reviewComment').value;
+                const ratingInput = document.querySelector('input[name="rating"]:checked');
+
+                if (!ratingInput) {
+                    showToast('Please select a star rating before submitting.', 'danger');
+                    return;
+                }
+
+                const rating = ratingInput.value;
+
+                fetch('/customer/review/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        productId: productId,
+                        rating: rating,
+                        comment: comment
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(data.message, 'success');
+                        setTimeout(() => {
+                            window.location.reload(); // Reload to reflect changes
+                        }, 1000);
+                    } else {
+                        showToast(data.message, 'danger');
+                    }
+                })
+                .catch(err => {
+                    console.error("Review Submission Error:", err);
+                    showToast('Error submitting review.', 'danger');
+                });
+            });
+        }
+
+        window.toggleDetailsWishlist = function(element) {
+            const productId = element.getAttribute('data-product-id');
+            const icon = element.querySelector('i');
+            const label = element.querySelector('span');
+
+            fetch('/customer/wishlist/toggle/' + productId, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    if (data.added) {
+                        element.classList.add('active', 'text-danger', 'border-danger');
+                        icon.className = 'bi bi-heart-fill me-2';
+                        label.textContent = 'WISHLISTED';
+                        showToast(data.message, 'success');
+                    } else {
+                        element.classList.remove('active', 'text-danger', 'border-danger');
+                        icon.className = 'bi bi-heart me-2';
+                        label.textContent = 'WISHLIST';
+                        showToast(data.message, 'success');
+                    }
+                } else {
+                    window.location.href = '/login';
+                }
+            })
+            .catch(err => {
+                console.error('Error toggling wishlist:', err);
+            });
+        };
+
+        function showToast(message, type = 'success') {
+            let container = document.getElementById('toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-container';
+                container.style.position = 'fixed';
+                container.style.bottom = '20px';
+                container.style.right = '20px';
+                container.style.zIndex = '9999';
+                document.body.appendChild(container);
+            }
+            
+            const toast = document.createElement('div');
+            toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show shadow-lg rounded-3 py-2 px-3 small`;
+            toast.style.minWidth = '220px';
+            toast.style.marginBottom = '10px';
+            toast.innerHTML = `
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-${type === 'success' ? 'check-circle-fill text-success' : 'exclamation-circle-fill text-danger'}"></i>
+                    <div>${message}</div>
+                </div>
+            `;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
+        }
+
+        // DELIVERY PINCODE CHECK FUNCTIONALITY
+        const pinInput = document.getElementById('pincode-input');
+        const pinBtn = document.getElementById('pincode-check-btn');
+        const pinResult = document.getElementById('pincode-result');
+        const currentProdId = '[[${product.id}]]';
+
+        if (pinBtn && pinInput) {
+            pinBtn.addEventListener('click', function() {
+                const val = pinInput.value.trim();
+                if (!val) {
+                    pinInput.classList.add('is-invalid');
+                    return;
+                }
+                pinInput.classList.remove('is-invalid');
+                pinBtn.disabled = true;
+                pinBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+
+                fetch(`/api/products/${currentProdId}/check-availability?pincode=${encodeURIComponent(val)}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        pinResult.style.display = 'block';
+                        pinResult.style.border = 'none';
+                        
+                        if (data.available) {
+                            pinResult.style.backgroundColor = '#f0fdf4'; // Green tint
+                            pinResult.innerHTML = `
+                                <div class="d-flex align-items-start gap-2">
+                                    <i class="bi bi-check-circle-fill text-success fs-5 mt-1"></i>
+                                    <div>
+                                        <strong class="text-success d-block">Serviceable in ${val}</strong>
+                                        <span class="small text-dark">${data.message}</span>
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            pinResult.style.backgroundColor = '#fef2f2'; // Red tint
+                            pinResult.innerHTML = `
+                                <div class="d-flex align-items-start gap-2">
+                                    <i class="bi bi-x-circle-fill text-danger fs-5 mt-1"></i>
+                                    <div>
+                                        <strong class="text-danger d-block">Currently Out of Reach</strong>
+                                        <span class="small text-dark">${data.message}</span>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    })
+                    .catch(e => {
+                        console.error(e);
+                        showToast("System checking offline. Try again later.", "danger");
+                    })
+                    .finally(() => {
+                        pinBtn.disabled = false;
+                        pinBtn.innerHTML = 'Check';
+                    });
+            });
+
+            // Allow trigger by Enter key
+            pinInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    pinBtn.click();
+                }
+            });
+        }
+    });
+</script>
+</body>
+</html>

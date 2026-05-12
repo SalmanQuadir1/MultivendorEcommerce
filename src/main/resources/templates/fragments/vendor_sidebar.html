@@ -1,0 +1,81 @@
+<!-- src/main/resources/templates/fragments/vendor_sidebar.html -->
+<div th:fragment="sidebar(activeLink)">
+    <aside class="sidebar" th:with="vendorUser=${@userService.findById(#authentication.principal.id)}">
+        <!-- Reflected Dynamic Branding In Sidebar -->
+        <!-- Reflected Dynamic Branding In Sidebar: Highly Beautiful View -->
+        <div class="brand-presence mb-4 text-center" style="background: linear-gradient(to bottom, rgba(255,255,255,0.05), transparent); border-radius: 20px; padding: 20px 10px; border: 1px solid rgba(255,255,255,0.05); margin: -5px 0 25px 0;">
+            <th:block th:if="${vendorUser != null and vendorUser.logoUrl != null and !vendorUser.logoUrl.isEmpty()}">
+                <a href="/" style="text-decoration: none; display: block;">
+                    <div style="width: 64px; height: 64px; background: #fff; border-radius: 50%; margin: 0 auto 12px auto; padding: 2px; box-shadow: 0 8px 20px rgba(0,0,0,0.25); border: 2px solid #16a34a;">
+                        <img th:src="@{${vendorUser.logoUrl}}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: contain;" alt="Logo">
+                    </div>
+                    <div style="color: #fff; font-size: 16px; font-weight: 800; letter-spacing: 0.2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" th:text="${vendorUser.fullName}">Store Name</div>
+                    <span class="badge bg-success-subtle text-success border border-success border-opacity-25 mt-2" style="font-size: 9px; font-weight: 800; letter-spacing: 1px;">PLATINUM SELLER</span>
+                </a>
+            </th:block>
+            <th:block th:unless="${vendorUser != null and vendorUser.logoUrl != null and !vendorUser.logoUrl.isEmpty()}">
+                <a href="/" style="text-decoration: none; display: block;">
+                    <div style="width: 48px; height: 48px; background: #ffe500; color: #000; border-radius: 14px; margin: 0 auto 10px auto; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 4px 12px rgba(255, 229, 0, 0.3);">
+                        <i class="bi bi-shop-window"></i>
+                    </div>
+                    <div style="color: #fff; font-size: 18px; font-weight: 800;">OrganicWorld<span style="color: #ffe500;">.</span></div>
+                </a>
+            </th:block>
+        </div>
+        
+        <div class="nav-section-title mt-2">Merchant Center</div>
+        <ul class="sidebar-nav mb-4">
+            <li>
+                <a th:href="@{/vendor/dashboard}" th:classappend="${activeLink == 'dashboard' ? 'active' : ''}" class="sidebar-link">
+                    <i class="bi bi-grid-1x2-fill"></i> Dashboard
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/vendor/products}" th:classappend="${activeLink == 'products' ? 'active' : ''}" class="sidebar-link">
+                    <i class="bi bi-boxes"></i> My Products
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/vendor/bulk-upload}" th:classappend="${activeLink == 'bulk-upload' ? 'active' : ''}" class="sidebar-link">
+                    <i class="bi bi-cloud-upload-fill"></i> Bulk Upload
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/vendor/inventory}" th:classappend="${activeLink == 'inventory' ? 'active' : ''}" class="sidebar-link">
+                    <i class="bi bi-warehouse-fill"></i> Manage Inventory
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/vendor/pincodes}" th:classappend="${activeLink == 'pincodes' ? 'active' : ''}" class="sidebar-link">
+                    <i class="bi bi-geo-alt-fill"></i> Delivery Zones
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/vendor/orders}" th:classappend="${activeLink == 'orders' ? 'active' : ''}" class="sidebar-link">
+                    <i class="bi bi-receipt-cutoff"></i> Orders Received
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/vendor/reports/pl}" th:classappend="${activeLink == 'reports' ? 'active' : ''}" class="sidebar-link">
+                    <i class="bi bi-graph-up-arrow"></i> Profit & Loss
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/vendor/profile}" th:classappend="${activeLink == 'profile' ? 'active' : ''}" class="sidebar-link">
+                    <i class="bi bi-person-bounding-box"></i> Brand Profile
+                </a>
+            </li>
+        </ul>
+
+        <div class="nav-section-title">Session</div>
+        <ul class="sidebar-nav mt-auto">
+            <li>
+                <form th:action="@{/logout}" method="post" id="logoutSidebarForm" class="m-0">
+                    <a href="javascript:void(0);" onclick="document.getElementById('logoutSidebarForm').submit();" class="sidebar-link text-danger">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </a>
+                </form>
+            </li>
+        </ul>
+    </aside>
+</div>

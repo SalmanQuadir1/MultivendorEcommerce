@@ -1,0 +1,369 @@
+<div th:fragment="sidebar(activeLink)">
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --accent: #2874f0;
+            --dark: #090e1a; /* Deeper space dark */
+            --card-bg: rgba(30, 41, 59, 0.4);
+            --hover-bg: rgba(255, 255, 255, 0.05);
+        }
+        
+        .sidebar {
+            width: 280px;
+            background-color: var(--dark);
+            color: #fff;
+            padding: 24px 20px;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 1000;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 10px 0 30px rgba(0,0,0,0.3);
+            overflow-y: auto;
+            padding-bottom: 60px !important;
+            /* New Aurora Glow Core */
+            background-image: radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.08) 0%, transparent 40%),
+                              radial-gradient(circle at 100% 100%, rgba(40, 116, 240, 0.05) 0%, transparent 50%);
+        }
+
+        /* Micro scrollbar invisibility */
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+        /* HIGH FIDELITY BRAND POD */
+        .brand-identity-section {
+            display: block;
+            position: relative;
+            background: linear-gradient(160deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.01) 100%);
+            border-radius: 24px;
+            padding: 24px 16px;
+            margin-bottom: 36px;
+            border: 1px solid rgba(255,255,255,0.08);
+            text-align: center;
+            text-decoration: none !important;
+            color: white !important;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+            overflow: visible; /* Permit glowing overflow */
+        }
+        
+        .brand-identity-section:hover {
+            transform: translateY(-4px);
+            border-color: rgba(59, 130, 246, 0.3);
+            box-shadow: 0 20px 40px rgba(40, 116, 240, 0.15), inset 0 0 20px rgba(255,255,255,0.03);
+        }
+
+        .admin-logo-container {
+            position: relative;
+            z-index: 2;
+            width: 84px;
+            height: 84px;
+            margin: 0 auto 18px auto;
+        }
+
+        /* Pulsing Aesthetic Orbit */
+        .logo-outer-ring {
+            position: absolute;
+            top: -4px; left: -4px; right: -4px; bottom: -4px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            border-top-color: rgba(59, 130, 246, 0.4);
+            border-bottom-color: rgba(40, 116, 240, 0.4);
+            animation: spinOrbit 4s linear infinite;
+        }
+        
+        @keyframes spinOrbit { 100% { transform: rotate(360deg); } }
+
+        .logo-inner-frame {
+            position: absolute;
+            inset: 0;
+            background: #ffffff;
+            border-radius: 50%;
+            padding: 4px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+            border: 2px solid #000; /* Sharp break */
+            z-index: 3;
+        }
+
+        .logo-img {
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            object-fit: contain;
+            transition: transform 0.3s;
+        }
+        .brand-identity-section:hover .logo-img { transform: scale(1.08); }
+
+        .logo-fallback {
+            width: 100%; height: 100%;
+            background: linear-gradient(135deg, #2563eb, #1e3a8a);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 32px; font-weight: 800;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .admin-name-wrap { position: relative; z-index: 2; }
+
+        .admin-display-name {
+            font-size: 17px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            background: linear-gradient(to right, #ffffff, #cbd5e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .role-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            font-size: 9px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1.2px;
+            padding: 5px 12px;
+            border-radius: 30px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            backdrop-filter: blur(4px);
+        }
+
+        /* MODERN LIST SEGMENTS */
+        .nav-section-title {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.8px;
+            color: #475569;
+            font-weight: 800;
+            margin: 12px 0 12px 16px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .nav-section-title::after {
+            content: ''; flex: 1; height: 1px; background: linear-gradient(to right, rgba(255,255,255,0.05), transparent);
+        }
+
+        .sidebar-nav {
+            list-style: none; padding: 0; margin: 0 0 24px 0;
+            display: flex; flex-direction: column; gap: 6px;
+        }
+
+        /* MAGNETIC LINK ENGINE */
+        .sidebar-link {
+            position: relative;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 16px;
+            color: #94a3b8;
+            text-decoration: none;
+            font-weight: 600; font-size: 14px;
+            border-radius: 14px;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            border: 1px solid transparent;
+        }
+
+        .link-content { display: flex; align-items: center; gap: 14px; }
+        
+        .sidebar-link i {
+            font-size: 19px;
+            transition: all 0.3s;
+            color: #64748b;
+        }
+
+        .sidebar-link:hover {
+            color: #f8fafc;
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(255, 255, 255, 0.03);
+            transform: translateX(5px);
+        }
+        .sidebar-link:hover i { color: #60a5fa; transform: scale(1.1); }
+
+        /* DYNAMIC ACTIVE INDICATOR */
+        .sidebar-link.active {
+            color: #ffffff;
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.15) 0%, rgba(37, 99, 235, 0.02) 100%);
+            border: 1px solid rgba(37, 99, 235, 0.25);
+            box-shadow: inset 0 0 20px rgba(37, 99, 235, 0.05);
+        }
+        
+        .sidebar-link.active::before {
+            content: '';
+            position: absolute; left: 0; top: 20%; bottom: 20%;
+            width: 3px; border-radius: 0 4px 4px 0;
+            background: #3b82f6;
+            box-shadow: 0 0 12px #3b82f6;
+        }
+
+        .sidebar-link.active i {
+            color: #3b82f6;
+            filter: drop-shadow(0 0 5px rgba(59, 130, 246, 0.5));
+        }
+
+        .chevron-indicator {
+            font-size: 10px !important;
+            opacity: 0;
+            transform: translateX(-8px);
+            transition: all 0.3s;
+        }
+        .sidebar-link:hover .chevron-indicator { opacity: 0.6; transform: translateX(0); }
+
+        /* PREMIUM LOWER UTILITIES */
+        .profile-settings-btn {
+            margin-top: auto;
+            padding: 16px;
+            background: linear-gradient(145deg, rgba(255,255,255,0.03), transparent);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.05);
+            text-decoration: none;
+            display: flex; align-items: center; gap: 12px;
+            color: #e2e8f0;
+            font-weight: 600; font-size: 13px;
+            transition: all 0.3s;
+            margin-bottom: 12px;
+        }
+        .profile-settings-btn:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(59, 130, 246, 0.2);
+            color: #fff;
+        }
+        .profile-settings-btn i { font-size: 20px; color: #3b82f6; }
+
+        .logout-btn {
+            display: flex; align-items: center; gap: 12px;
+            padding: 14px 16px;
+            border-radius: 16px;
+            background: rgba(239, 68, 68, 0.03);
+            border: 1px solid rgba(239, 68, 68, 0.1);
+            color: #fca5a5;
+            font-weight: 700; font-size: 13px;
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer; width: 100%;
+        }
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.05);
+        }
+    </style>
+
+    <!-- SPEL fetch of fresh data ensuring logo updates resolve real-time without security caching delays -->
+    <div class="sidebar" th:with="adminUser=${@userService.findById(#authentication.principal.id)}">
+        
+        <!-- Premium Dynamic Branding Container with Home Link -->
+        <a href="/" class="brand-identity-section d-block text-decoration-none">
+            <div class="admin-logo-container">
+                <div class="logo-outer-ring"></div>
+                <div class="logo-inner-frame">
+                    <!-- Display Logo or Fallback Letter -->
+                    <img th:if="${adminUser.logoUrl != null and !adminUser.logoUrl.isEmpty()}" th:src="@{${adminUser.logoUrl}}" alt="Logo" class="logo-img">
+                    <div th:if="${adminUser.logoUrl == null or adminUser.logoUrl.isEmpty()}" class="logo-fallback" 
+                         th:text="${adminUser.fullName != null && !adminUser.fullName.isEmpty() ? #strings.substring(adminUser.fullName, 0, 1) : 'A'}">A</div>
+                </div>
+            </div>
+            
+            <div class="admin-name-wrap">
+                <div class="admin-display-name" th:text="${adminUser.fullName}">Super Admin</div>
+                <span class="role-badge">
+                    <i class="bi bi-patch-check-fill"></i> SYSTEM ADMIN
+                </span>
+            </div>
+        </a>
+
+        <div class="nav-section-title">Intelligence</div>
+        <ul class="sidebar-nav">
+            <li>
+                <a href="/admin/dashboard" class="sidebar-link" th:classappend="${activeLink == 'dashboard' ? 'active' : ''}">
+                    <div class="link-content">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </div>
+                    <i class="bi bi-chevron-right chevron-indicator"></i>
+                </a>
+            </li>
+            <li sec:authorize="hasAnyRole('SUPER_ADMIN','ADMIN','FINANCE_ADMIN','MARKETING_ADMIN')">
+                <a href="/admin/reports" class="sidebar-link" th:classappend="${activeLink == 'reports' ? 'active' : ''}">
+                    <div class="link-content">
+                        <i class="bi bi-graph-up-arrow"></i> Reports
+                    </div>
+                    <i class="bi bi-chevron-right chevron-indicator"></i>
+                </a>
+            </li>
+        </ul>
+
+        <div class="nav-section-title">Catalog & Logistics</div>
+        <ul class="sidebar-nav">
+            <li>
+                <a href="/admin/categories" class="sidebar-link" th:classappend="${activeLink == 'categories' ? 'active' : ''}">
+                    <div class="link-content">
+                        <i class="bi bi-tags-fill"></i> Categories
+                    </div>
+                    <i class="bi bi-chevron-right chevron-indicator"></i>
+                </a>
+            </li>
+            <li>
+                <a href="/admin/products" class="sidebar-link" th:classappend="${activeLink == 'products' ? 'active' : ''}">
+                    <div class="link-content">
+                        <i class="bi bi-boxes"></i> Catalog
+                    </div>
+                    <i class="bi bi-chevron-right chevron-indicator"></i>
+                </a>
+            </li>
+            <li>
+                <a href="/admin/inventory" class="sidebar-link" th:classappend="${activeLink == 'inventory' ? 'active' : ''}">
+                    <div class="link-content">
+                        <i class="bi bi-box-seam"></i> Inventory
+                    </div>
+                    <i class="bi bi-chevron-right chevron-indicator"></i>
+                </a>
+            </li>
+        </ul>
+
+        <div class="nav-section-title" sec:authorize="hasAnyRole('SUPER_ADMIN','ADMIN','SUPPORT_ADMIN')">Accounts</div>
+        <ul class="sidebar-nav" sec:authorize="hasAnyRole('SUPER_ADMIN','ADMIN','SUPPORT_ADMIN')">
+            <li>
+                <a href="/admin/vendors" class="sidebar-link" th:classappend="${activeLink == 'vendors' ? 'active' : ''}">
+                    <div class="link-content"><i class="bi bi-shop"></i> Vendors</div>
+                    <i class="bi bi-chevron-right chevron-indicator"></i>
+                </a>
+            </li>
+            <li>
+                <a href="/admin/users" class="sidebar-link" th:classappend="${activeLink == 'users' ? 'active' : ''}">
+                    <div class="link-content"><i class="bi bi-people"></i> Clients</div>
+                    <i class="bi bi-chevron-right chevron-indicator"></i>
+                </a>
+            </li>
+        </ul>
+
+        <div class="nav-section-title" sec:authorize="hasAnyRole('SUPER_ADMIN','ADMIN','MARKETING_ADMIN','FINANCE_ADMIN')">Site Control</div>
+        <ul class="sidebar-nav" sec:authorize="hasAnyRole('SUPER_ADMIN','ADMIN','MARKETING_ADMIN','FINANCE_ADMIN')">
+            <li sec:authorize="hasAnyRole('SUPER_ADMIN','ADMIN','MARKETING_ADMIN')">
+                <a href="/admin/carousel" class="sidebar-link" th:classappend="${activeLink == 'carousel' ? 'active' : ''}">
+                    <div class="link-content"><i class="bi bi-images"></i> Banners</div>
+                    <i class="bi bi-chevron-right chevron-indicator"></i>
+                </a>
+            </li>
+            <li sec:authorize="hasAnyRole('SUPER_ADMIN','ADMIN','FINANCE_ADMIN')">
+                <a href="/admin/payments" class="sidebar-link" th:classappend="${activeLink == 'payments' ? 'active' : ''}">
+                    <div class="link-content"><i class="bi bi-credit-card"></i> Payments</div>
+                    <i class="bi bi-chevron-right chevron-indicator"></i>
+                </a>
+            </li>
+        </ul>
+
+        <!-- Profile/Branding Settings Control -->
+        <a href="/admin/profile" class="profile-settings-btn" th:classappend="${activeLink == 'profile' ? 'bg-primary text-white' : ''}">
+            <i class="bi bi-palette-fill" th:style="${activeLink == 'profile' ? 'color: white' : ''}"></i>
+            <div>
+                <div style="font-size: 11px; opacity: 0.7; font-weight: 700; text-transform: uppercase;">Manage</div>
+                Branding & Logo
+            </div>
+        </a>
+
+        <form th:action="@{/logout}" method="post" id="adminSidebarLogout" class="m-0">
+            <button type="submit" class="logout-btn">
+                <i class="bi bi-power"></i> Log Out
+            </button>
+        </form>
+    </div>
+</div>

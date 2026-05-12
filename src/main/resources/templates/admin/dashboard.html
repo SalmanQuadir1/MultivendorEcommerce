@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard | OrganicWorld</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary: #2874f0;
+            --primary-light: rgba(40, 116, 240, 0.08);
+            --success: #10b981;
+            --success-light: rgba(16, 185, 129, 0.08);
+            --warning: #f59e0b;
+            --warning-light: rgba(245, 158, 11, 0.08);
+            --info: #06b6d4;
+            --info-light: rgba(6, 182, 212, 0.08);
+            --danger: #ef4444;
+            --danger-light: rgba(239, 68, 68, 0.08);
+            --dark: #0f172a;
+            --gray-light: #f8fafc;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* Modern Dashboard Split Layout */
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+
+
+        /* Main Content Panel */
+        .main-content {
+            margin-left: 280px;
+            flex-grow: 1;
+            padding: 40px;
+            background-color: #f8fafc;
+            min-height: 100vh;
+        }
+
+        /* Header Bar */
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 35px;
+        }
+
+        .user-profile-badge {
+            background: #fff;
+            padding: 8px 18px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+
+        /* Modern Cards */
+        .glass-card {
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stat-card {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+        }
+
+        .stat-card.sc-primary::before { background: var(--primary); }
+        .stat-card.sc-success::before { background: var(--success); }
+        .stat-card.sc-warning::before { background: var(--warning); }
+        .stat-card.sc-info::before { background: var(--info); }
+        .stat-card.sc-danger::before { background: var(--danger); }
+
+        .icon-box {
+            width: 54px;
+            height: 54px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        /* Modern Tabs */
+        .custom-tabs-header {
+            display: flex;
+            gap: 10px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0px;
+            margin-bottom: 25px;
+        }
+
+        .tab-trigger {
+            background: none;
+            border: none;
+            padding: 14px 24px;
+            font-weight: 700;
+            font-size: 15px;
+            color: #64748b;
+            position: relative;
+            transition: all 0.25s ease;
+        }
+
+        .tab-trigger:hover, .tab-trigger.active {
+            color: var(--primary);
+        }
+
+        .tab-trigger::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--primary);
+            transform: scaleX(0);
+            transition: transform 0.25s ease;
+        }
+
+        .tab-trigger.active::after {
+            transform: scaleX(1);
+        }
+
+        /* Modern Table */
+        .table-modern {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+
+        .table-modern th {
+            color: #64748b;
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: none;
+            padding: 12px 20px;
+        }
+
+        .table-modern tbody tr {
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.01);
+            transition: all 0.25s ease;
+        }
+
+        .table-modern tbody tr:hover {
+            transform: scale(1.005);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        }
+
+        .table-modern td {
+            padding: 18px 20px;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+        }
+
+        .table-modern td:first-child {
+            border-left: 1px solid var(--border-color);
+            border-top-left-radius: 12px;
+            border-bottom-left-radius: 12px;
+        }
+
+        .table-modern td:last-child {
+            border-right: 1px solid var(--border-color);
+            border-top-right-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+
+        /* Status Badges */
+        .modern-badge {
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge-primary { background: var(--primary-light); color: var(--primary); }
+        .badge-success { background: var(--success-light); color: var(--success); }
+        .badge-warning { background: var(--warning-light); color: var(--warning); }
+        .badge-info { background: var(--info-light); color: var(--info); }
+        .badge-danger { background: var(--danger-light); color: var(--danger); }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    <!-- Modern Left Sidebar -->
+    <!-- Centralized Fragment -->
+    <div th:replace="~{fragments/admin_sidebar :: sidebar('dashboard')}"></div>
+
+    <!-- Main Content Panel -->
+    <main class="main-content">
+        <!-- Top Header Bar -->
+        <header class="top-header">
+            <div>
+                <h1 class="fw-extrabold text-dark m-0 fs-3" style="font-weight: 800; letter-spacing: -0.5px;">Admin Control Center</h1>
+                <p class="text-muted small m-0">Seamlessly process orders, vendors, and stock lists.</p>
+            </div>
+            
+            <div class="user-profile-badge">
+                <div class="text-end">
+                    <span class="d-block fw-bold text-dark" style="font-size: 13px;" th:text="${#authentication.principal.fullName}">Administrator</span>
+                    <span class="text-muted small" style="font-size: 11px;">Primary Owner</span>
+                </div>
+                <div class="bg-primary text-white icon-box" style="width: 36px; height: 36px; border-radius: 50%; font-size: 14px;">
+                    <i class="bi bi-person-fill-lock"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dynamic Stat Cards -->
+        <div class="row g-4 mb-5">
+            <div class="col-xl-3 col-sm-6">
+                <div class="glass-card stat-card sc-primary p-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted small text-uppercase fw-bold d-block mb-1">Total Sales</span>
+                        <h2 class="fw-bold m-0 text-dark">₹<span th:text="${totalRevenue}">0.00</span></h2>
+                    </div>
+                    <div class="icon-box bg-primary-subtle text-primary">
+                        <i class="bi bi-currency-rupee"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-sm-6">
+                <div class="glass-card stat-card sc-success p-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted small text-uppercase fw-bold d-block mb-1">Completed Orders</span>
+                        <h2 class="fw-bold m-0 text-dark" th:text="${totalOrders}">0</h2>
+                    </div>
+                    <div class="icon-box bg-success-subtle text-success">
+                        <i class="bi bi-receipt-cutoff"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-sm-6">
+                <div class="glass-card stat-card sc-warning p-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted small text-uppercase fw-bold d-block mb-1">Live Products</span>
+                        <h2 class="fw-bold m-0 text-dark" th:text="${totalProducts}">0</h2>
+                    </div>
+                    <div class="icon-box bg-warning-subtle text-warning">
+                        <i class="bi bi-boxes"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-sm-6">
+                <div class="glass-card stat-card sc-info p-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted small text-uppercase fw-bold d-block mb-1">Active Vendors</span>
+                        <h2 class="fw-bold m-0 text-dark" th:text="${totalVendors}">0</h2>
+                    </div>
+                    <div class="icon-box bg-info-subtle text-info">
+                        <i class="bi bi-shop"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Details Sections with Tabs -->
+        <div class="glass-card p-4">
+            <div class="custom-tabs-header">
+                <button class="tab-trigger active" onclick="switchTab('orders-tab', this)">
+                    <i class="bi bi-cart-check-fill me-1"></i> Orders Processing
+                </button>
+                <button class="tab-trigger" onclick="switchTab('products-tab', this)">
+                    <i class="bi bi-grid-fill me-1"></i> Product Directory
+                </button>
+                <button class="tab-trigger" onclick="switchTab('users-tab', this)">
+                    <i class="bi bi-people-fill me-1"></i> Users & Clients
+                </button>
+                <button class="tab-trigger" onclick="switchTab('reports-tab', this)">
+                    <i class="bi bi-graph-up-arrow me-1"></i> Reports & Analytics Center
+                </button>
+            </div>
+
+            <!-- Tab 1: Orders -->
+            <div id="orders-tab" class="tab-content">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-dark m-0">Recent Invoices & Sales</h5>
+                    <button class="btn btn-sm btn-outline-success px-3 rounded-3" onclick="exportTableToCSV('#orders-tab table', 'orders_report.csv')">
+                        <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export Orders CSV
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table-modern">
+                        <thead>
+                            <tr>
+                                <th>Order Details</th>
+                                <th>Client Name</th>
+                                <th>Ordered Products</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Workflow Control</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="order : ${orders}">
+                                <td>
+                                    <div class="fw-bold text-dark" th:text="'#ORD-' + ${order.id}">#ORD-1</div>
+                                    <span class="text-muted small" th:text="${#temporals.format(order.createdAt, 'dd MMM yyyy, HH:mm')}">Date</span>
+                                </td>
+                                <td>
+                                    <div class="fw-bold text-dark" th:text="${order.user.fullName}">Name</div>
+                                    <span class="text-muted small" th:text="${order.user.email}">user@email.com</span>
+                                </td>
+                                <td>
+                                    <ul class="list-unstyled mb-0 small">
+                                        <li th:each="item : ${order.items}">
+                                            <span class="fw-bold text-dark" th:text="${item.product.name}">Product</span>
+                                            <span class="text-muted" th:text="'x' + ${item.quantity}">x1</span>
+                                        </li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <div class="fw-bold text-dark">₹<span th:text="${order.totalAmount}">0.00</span></div>
+                                </td>
+                                <td>
+                                    <span th:class="'modern-badge badge-' + ${order.status.name() == 'PAID' ? 'success' : (order.status.name() == 'DELIVERED' ? 'info' : (order.status.name() == 'CANCELLED' ? 'danger' : 'warning'))}" th:text="${order.status}">Status</span>
+                                </td>
+                                <td>
+                                    <form th:action="@{/admin/orders/update-status}" method="POST" class="d-flex align-items-center gap-1">
+                                        <input type="hidden" name="orderId" th:value="${order.id}">
+                                        <select name="status" class="form-select form-select-sm border-0 bg-light fw-bold" style="width: 130px; font-size: 12px; border-radius: 8px; padding: 6px 10px;">
+                                            <option value="PENDING" th:selected="${order.status.name() == 'PENDING'}">PENDING</option>
+                                            <option value="PAID" th:selected="${order.status.name() == 'PAID'}">PAID</option>
+                                            <option value="SHIPPED" th:selected="${order.status.name() == 'SHIPPED'}">SHIPPED</option>
+                                            <option value="DELIVERED" th:selected="${order.status.name() == 'DELIVERED'}">DELIVERED</option>
+                                            <option value="CANCELLED" th:selected="${order.status.name() == 'CANCELLED'}">CANCELLED</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-primary btn-sm px-2.5 py-1.5" style="border-radius: 8px;"><i class="bi bi-check-lg"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination for Orders Tab -->
+                <div th:replace="~{fragments/pagination :: pagination(pagedData=${orders}, baseUrl='/admin/dashboard', pageParam='ordersPage', sizeParam='ordersSize')}"></div>
+            </div>
+
+            <!-- Tab 2: Products -->
+            <div id="products-tab" class="tab-content" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-dark m-0">Live Product Catalog</h5>
+                    <button class="btn btn-sm btn-outline-success px-3 rounded-3" onclick="exportTableToCSV('#products-tab table', 'products_report.csv')">
+                        <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export Products CSV
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table-modern">
+                        <thead>
+                            <tr>
+                                <th>Product Details</th>
+                                <th>Category</th>
+                                <th>Vendor Details</th>
+                                <th>Unit Price</th>
+                                <th>Inventory stock</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="product : ${products}">
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <img th:src="@{${product.imageUrl != null ? product.imageUrl : '/images/placeholder.png'}}" style="width: 48px; height: 48px; object-fit: contain; border-radius: 8px;" class="border bg-light">
+                                        <div>
+                                            <div class="fw-bold text-dark" th:text="${product.name}">Product Name</div>
+                                            <span class="text-muted small">ID: <span th:text="${product.id}">1</span></span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="modern-badge badge-primary" th:text="${product.category.name}">Category</span>
+                                </td>
+                                <td>
+                                    <div class="fw-bold text-dark" th:text="${product.vendor.fullName}">Vendor</div>
+                                    <span class="text-muted small" th:text="${product.vendor.email}">vendor@email.com</span>
+                                </td>
+                                <td>
+                                    <div class="fw-bold text-dark">₹<span th:text="${product.price}">0.00</span></div>
+                                </td>
+                                <td>
+                                    <ul class="list-unstyled mb-0 small">
+                                        <li th:each="v : ${product.variants}">
+                                            <span class="text-muted" th:text="'Size: ' + ${v.size}">Size</span>
+                                            <span th:class="${v.stock <= 10 ? 'text-danger fw-bold' : 'text-success fw-bold'}" th:text="'(' + ${v.stock} + ' left)'">Stock</span>
+                                        </li>
+                                    </ul>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination for Products Tab -->
+                <div th:replace="~{fragments/pagination :: pagination(pagedData=${products}, baseUrl='/admin/dashboard', pageParam='productsPage', sizeParam='productsSize')}"></div>
+            </div>
+
+            <!-- Tab 3: Users -->
+            <div id="users-tab" class="tab-content" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-dark m-0">User Directory</h5>
+                    <button class="btn btn-sm btn-outline-success px-3 rounded-3" onclick="exportTableToCSV('#users-tab table', 'users_report.csv')">
+                        <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export Users CSV
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table-modern">
+                        <thead>
+                            <tr>
+                                <th>User ID</th>
+                                <th>Full Name</th>
+                                <th>Email Address</th>
+                                <th>User Roles</th>
+                                <th>Account Status</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="user : ${users}">
+                                <td><strong th:text="${'#USR-' + user.id}">#USR-1</strong></td>
+                                <td class="fw-bold text-dark" th:text="${user.fullName}">Name</td>
+                                <td th:text="${user.email}">user@email.com</td>
+                                <td>
+                                    <span th:each="role : ${user.roles}" th:class="'modern-badge badge-' + ${role.name == 'ROLE_ADMIN' ? 'danger' : (role.name == 'ROLE_VENDOR' ? 'info' : 'secondary')} + ' me-1'" th:text="${role.name}">ROLE</span>
+                                </td>
+                                <td>
+                                    <span th:class="'modern-badge badge-' + ${user.enabled ? 'success' : 'danger'}" th:text="${user.enabled ? 'ACTIVE' : 'SUSPENDED'}">ACTIVE</span>
+                                </td>
+                                <td class="text-end">
+                                    <form th:action="@{'/admin/users/toggle/' + ${user.id}}" method="POST" class="m-0 d-inline">
+                                        <button type="submit" th:class="'btn btn-sm px-3 rounded-3 ' + ${user.enabled ? 'btn-outline-danger' : 'btn-outline-success'}" th:text="${user.enabled ? 'Suspend' : 'Activate'}">Toggle</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination for Users Tab -->
+                <div th:replace="~{fragments/pagination :: pagination(pagedData=${users}, baseUrl='/admin/dashboard', pageParam='usersPage', sizeParam='usersSize')}"></div>
+            </div>
+
+            <!-- Tab 4: Reports & Analytics Center -->
+            <div id="reports-tab" class="tab-content" style="display: none;">
+                <div class="row g-4 mb-4">
+                    <!-- Orders & Sales Module Report -->
+                    <div class="col-lg-4">
+                        <div class="card border-0 bg-light rounded-4 p-4 h-100">
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <div class="bg-success text-white icon-box rounded-3" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; font-size: 20px; border-radius: 12px;">
+                                    <i class="bi bi-currency-rupee"></i>
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold text-dark m-0">Sales Module</h5>
+                                    <span class="text-muted small">Invoices & Orders</span>
+                                </div>
+                            </div>
+                            <div class="border-top pt-3 mb-4">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted small">Total Orders</span>
+                                    <strong class="text-dark" th:text="${orders.getTotalElements()}">0</strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted small">Gross Revenue</span>
+                                    <strong class="text-dark" th:text="'₹' + ${totalRevenue != null ? totalRevenue : 0}">₹0.00</strong>
+                                </div>
+                            </div>
+                            <button class="btn btn-success w-100 py-2.5 rounded-3 fw-bold" onclick="exportTableToCSV('#orders-tab table', 'sales_module_report.csv')">
+                                <i class="bi bi-cloud-arrow-down-fill me-1"></i> Download Sales Report
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Products & Inventory Module Report -->
+                    <div class="col-lg-4">
+                        <div class="card border-0 bg-light rounded-4 p-4 h-100">
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <div class="bg-primary text-white icon-box rounded-3" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; font-size: 20px; border-radius: 12px;">
+                                    <i class="bi bi-boxes"></i>
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold text-dark m-0">Products Module</h5>
+                                    <span class="text-muted small">Catalog & Stock</span>
+                                </div>
+                            </div>
+                            <div class="border-top pt-3 mb-4">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted small">Total Products</span>
+                                    <strong class="text-dark" th:text="${products.getTotalElements()}">0</strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted small">Low Stock Warnings</span>
+                                    <strong class="text-warning" th:text="${lowStockCount}">0</strong>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary w-100 py-2.5 rounded-3 fw-bold" onclick="exportTableToCSV('#products-tab table', 'products_module_report.csv')">
+                                <i class="bi bi-cloud-arrow-down-fill me-1"></i> Download Catalog Report
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- User Directory Module Report -->
+                    <div class="col-lg-4">
+                        <div class="card border-0 bg-light rounded-4 p-4 h-100">
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <div class="bg-info text-white icon-box rounded-3" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; font-size: 20px; border-radius: 12px;">
+                                    <i class="bi bi-people-fill"></i>
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold text-dark m-0">Users Module</h5>
+                                    <span class="text-muted small">Clients & Merchants</span>
+                                </div>
+                            </div>
+                            <div class="border-top pt-3 mb-4">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted small">Total Accounts</span>
+                                    <strong class="text-dark" th:text="${users.getTotalElements()}">0</strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted small">Verified Vendors</span>
+                                    <strong class="text-dark" th:text="${totalVendors}">0</strong>
+                                </div>
+                            </div>
+                            <button class="btn btn-info text-white w-100 py-2.5 rounded-3 fw-bold" onclick="exportTableToCSV('#users-tab table', 'users_module_report.csv')">
+                                <i class="bi bi-cloud-arrow-down-fill me-1"></i> Download Users Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    function switchTab(tabId, btn) {
+        document.querySelectorAll('.tab-content').forEach(function(content) {
+            content.style.display = 'none';
+        });
+        document.querySelectorAll('.tab-trigger').forEach(function(button) {
+            button.classList.remove('active');
+        });
+        document.getElementById(tabId).style.display = 'block';
+        btn.classList.add('active');
+    }
+
+    function exportTableToCSV(tableSelector, filename = 'report.csv') {
+        const table = document.querySelector(tableSelector);
+        if (!table) return;
+        const rows = Array.from(table.querySelectorAll('tr'));
+
+        let csvContent = "data:text/csv;charset=utf-8,";
+
+        rows.forEach(row => {
+            const cols = Array.from(row.querySelectorAll('th, td'));
+            const rowData = cols.map(col => {
+                let text = col.textContent.replace(/(\r\n|\n|\r)/gm, "").trim();
+                text = text.replace(/"/g, '""');
+                return `"\${text}"`;
+            }).join(",");
+            csvContent += rowData + "\\r\\n";
+        });
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", filename);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

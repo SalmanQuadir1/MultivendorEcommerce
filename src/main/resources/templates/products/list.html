@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop Products | OrganicWorld</title>
+    <meta name="description" content="Browse our premium collection of organic dry fruits, nuts, and healthy snacks. Filter by category, price, and more.">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        :root {
+            --accent: #16a34a;
+            --accent-light: rgba(22, 163, 74, 0.08);
+            --card-radius: 16px;
+        }
+
+        body { background: #f8fafc; }
+
+        /* ── Search Bar ─────────────────────────────────────── */
+        .search-bar-wrap {
+            background: #fff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 14px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .search-input-group {
+            display: flex;
+            border: 2px solid var(--accent);
+            border-radius: 50px;
+            overflow: hidden;
+            background: #fff;
+            transition: box-shadow .2s;
+        }
+        .search-input-group:focus-within { box-shadow: 0 0 0 4px rgba(22,163,74,.15); }
+        .search-input-group input {
+            border: none; outline: none; flex: 1;
+            padding: 10px 20px; font-size: 15px;
+        }
+        .search-input-group button {
+            background: var(--accent); color: #fff;
+            border: none; padding: 0 24px; font-size: 16px;
+            cursor: pointer; transition: background .2s;
+        }
+        .search-input-group button:hover { background: #15803d; }
+
+        /* ── Sort Bar ───────────────────────────────────────── */
+        .sort-bar {
+            display: flex; align-items: center; gap: 10px;
+            flex-wrap: wrap; margin-bottom: 20px;
+        }
+        .sort-btn {
+            border: 1.5px solid #e2e8f0; background: #fff;
+            border-radius: 20px; padding: 5px 16px; font-size: 13px;
+            cursor: pointer; transition: all .2s; text-decoration: none; color: #374151;
+        }
+        .sort-btn:hover, .sort-btn.active {
+            border-color: var(--accent); background: var(--accent-light);
+            color: var(--accent); font-weight: 600;
+        }
+
+        /* ── Filter Sidebar ─────────────────────────────────── */
+        .filter-sidebar {
+            background: #fff;
+            border-radius: var(--card-radius);
+            border: 1px solid #e2e8f0;
+            padding: 20px;
+            position: sticky;
+            top: 80px;
+        }
+        .filter-section-title {
+            font-size: 12px; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 1px;
+            color: #6b7280; margin-bottom: 12px; margin-top: 20px;
+        }
+        .filter-section-title:first-child { margin-top: 0; }
+        .filter-cat-link {
+            display: flex; align-items: center; gap-: 8px;
+            padding: 7px 10px; border-radius: 8px;
+            text-decoration: none; color: #374151; font-size: 14px;
+            transition: all .15s;
+        }
+        .filter-cat-link:hover { background: var(--accent-light); color: var(--accent); }
+        .filter-cat-link.active { background: var(--accent-light); color: var(--accent); font-weight: 700; }
+        .price-input {
+            width: 100%; border: 1.5px solid #e2e8f0;
+            border-radius: 8px; padding: 8px 12px;
+            font-size: 13px; outline: none;
+        }
+        .price-input:focus { border-color: var(--accent); }
+        .btn-apply-filter {
+            background: var(--accent); color: #fff; border: none;
+            border-radius: 8px; padding: 8px 0; width: 100%;
+            font-weight: 700; font-size: 14px; margin-top: 10px;
+            cursor: pointer; transition: background .2s;
+        }
+        .btn-apply-filter:hover { background: #15803d; }
+        .btn-clear-filter {
+            display: block; text-align: center; margin-top: 8px;
+            color: #6b7280; font-size: 12px; text-decoration: none;
+        }
+        .btn-clear-filter:hover { color: #ef4444; }
+
+        /* ── Product Cards ──────────────────────────────────── */
+        .product-card {
+            background: #fff; border-radius: var(--card-radius);
+            border: 1px solid #e2e8f0; overflow: hidden;
+            transition: transform .2s, box-shadow .2s;
+        }
+        .product-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,.08); }
+        .product-img-wrap {
+            position: relative; aspect-ratio: 1;
+            background: #f1f5f9; overflow: hidden;
+        }
+        .product-img-wrap img {
+            width: 100%; height: 100%; object-fit: contain;
+            padding: 12px; transition: transform .3s;
+        }
+        .product-card:hover .product-img-wrap img { transform: scale(1.06); }
+        .wishlist-btn {
+            position: absolute; top: 10px; right: 10px;
+            width: 34px; height: 34px; background: #fff;
+            border-radius: 50%; border: 1px solid #e2e8f0;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all .2s; z-index: 2;
+            box-shadow: 0 2px 8px rgba(0,0,0,.08);
+        }
+        .wishlist-btn:hover { transform: scale(1.15); border-color: #ef4444; }
+        .product-body { padding: 14px; }
+        .product-cat-badge {
+            font-size: 10px; font-weight: 700; letter-spacing: .8px;
+            text-transform: uppercase; color: var(--accent);
+            background: var(--accent-light); border-radius: 4px;
+            padding: 2px 8px; display: inline-block; margin-bottom: 6px;
+        }
+        .product-name {
+            font-size: 14px; font-weight: 700; color: #1e293b;
+            line-height: 1.35; margin-bottom: 4px;
+            display: -webkit-box; -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical; overflow: hidden;
+        }
+        .product-vendor { font-size: 12px; color: #94a3b8; margin-bottom: 8px; }
+        .star-rating { color: #f59e0b; font-size: 12px; }
+        .product-price { font-size: 18px; font-weight: 800; color: #1e293b; }
+        .product-mrp {
+            font-size: 12px; color: #94a3b8;
+            text-decoration: line-through; margin-left: 6px;
+        }
+        .discount-pill {
+            font-size: 11px; font-weight: 700; color: var(--accent);
+            background: var(--accent-light); border-radius: 4px;
+            padding: 1px 6px; margin-left: 6px;
+        }
+        .btn-add-cart {
+            background: var(--accent); color: #fff; border: none;
+            border-radius: 8px; width: 100%; padding: 9px 0;
+            font-weight: 700; font-size: 13px; margin-top: 10px;
+            cursor: pointer; transition: background .2s;
+        }
+        .btn-add-cart:hover { background: #15803d; }
+
+        /* ── Results header ─────────────────────────────────── */
+        .results-count {
+            font-size: 14px; color: #6b7280;
+        }
+        .results-count span { font-weight: 700; color: #1e293b; }
+
+        /* ── Empty State ────────────────────────────────────── */
+        .empty-state {
+            text-align: center; padding: 80px 20px;
+        }
+        .empty-state .icon { font-size: 64px; color: #cbd5e1; margin-bottom: 16px; }
+        .empty-state h4 { color: #475569; font-weight: 700; }
+        .empty-state p { color: #94a3b8; }
+
+        /* ── Pagination ─────────────────────────────────────── */
+        .pagination .page-link {
+            border-radius: 8px !important; margin: 0 2px;
+            border: 1.5px solid #e2e8f0; color: #374151;
+        }
+        .pagination .page-item.active .page-link {
+            background: var(--accent); border-color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<!-- ── Sticky Search Bar ───────────────────────────────────────────── -->
+<div class="search-bar-wrap shadow-sm">
+    <div class="container">
+        <form method="get" action="/products" id="searchForm">
+            <div class="row g-2 align-items-center">
+                <div class="col-md-7">
+                    <div class="search-input-group">
+                        <input type="text" name="keyword" id="searchKeyword"
+                               th:value="${keyword}"
+                               placeholder="Search products, categories, brands...">
+                        <button type="submit" id="searchBtn">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-5 d-none d-md-flex gap-2 justify-content-end align-items-center">
+                    <span class="text-muted small">Sort by:</span>
+                    <a th:href="@{/products(keyword=${keyword},categoryId=${selectedCategory},minPrice=${minPrice},maxPrice=${maxPrice},sort='newest')}"
+                       th:classappend="${sort == 'newest'} ? 'active' : ''" class="sort-btn">Newest</a>
+                    <a th:href="@{/products(keyword=${keyword},categoryId=${selectedCategory},minPrice=${minPrice},maxPrice=${maxPrice},sort='price_asc')}"
+                       th:classappend="${sort == 'price_asc'} ? 'active' : ''" class="sort-btn">Price ↑</a>
+                    <a th:href="@{/products(keyword=${keyword},categoryId=${selectedCategory},minPrice=${minPrice},maxPrice=${maxPrice},sort='price_desc')}"
+                       th:classappend="${sort == 'price_desc'} ? 'active' : ''" class="sort-btn">Price ↓</a>
+                    <a th:href="@{/products(keyword=${keyword},categoryId=${selectedCategory},minPrice=${minPrice},maxPrice=${maxPrice},sort='name_asc')}"
+                       th:classappend="${sort == 'name_asc'} ? 'active' : ''" class="sort-btn">A–Z</a>
+                </div>
+            </div>
+            <!-- preserve hidden params -->
+            <input type="hidden" name="sort" th:value="${sort}" id="sortHidden">
+            <input type="hidden" name="categoryId" th:value="${selectedCategory}" id="catHidden">
+        </form>
+    </div>
+</div>
+
+<div class="container-fluid px-4 my-4">
+    <div class="row g-4">
+
+        <!-- ── Filter Sidebar ──────────────────────────────────────────── -->
+        <div class="col-md-2">
+            <div class="filter-sidebar">
+                <form method="get" action="/products" id="filterForm">
+                    <input type="hidden" name="keyword" th:value="${keyword}">
+                    <input type="hidden" name="sort" th:value="${sort}">
+
+                    <div class="filter-section-title">Categories</div>
+                    <a th:href="@{/products(keyword=${keyword},sort=${sort})}"
+                       class="filter-cat-link d-flex align-items-center gap-2"
+                       th:classappend="${selectedCategory == null} ? 'active' : ''">
+                        <i class="bi bi-grid"></i> All Products
+                    </a>
+                    <a th:each="cat : ${categories}"
+                       th:href="@{/products(keyword=${keyword},sort=${sort},categoryId=${cat.id})}"
+                       class="filter-cat-link d-flex align-items-center gap-2"
+                       th:classappend="${selectedCategory == cat.id} ? 'active' : ''">
+                        <i class="bi bi-tag"></i>
+                        <span th:text="${cat.name}">Category</span>
+                    </a>
+
+                    <div class="filter-section-title mt-3">Price Range</div>
+                    <div class="mb-2">
+                        <label class="small text-muted mb-1">Min Price (₹)</label>
+                        <input type="number" name="minPrice" class="price-input"
+                               th:value="${minPrice}" placeholder="0" min="0">
+                    </div>
+                    <div class="mb-2">
+                        <label class="small text-muted mb-1">Max Price (₹)</label>
+                        <input type="number" name="maxPrice" class="price-input"
+                               th:value="${maxPrice}" placeholder="10000" min="0">
+                    </div>
+                    <input type="hidden" name="categoryId" th:value="${selectedCategory}">
+                    <button type="submit" class="btn-apply-filter">Apply Filters</button>
+                    <a href="/products" class="btn-clear-filter">
+                        <i class="bi bi-x-circle me-1"></i>Clear all filters
+                    </a>
+                </form>
+            </div>
+        </div>
+
+        <!-- ── Main Product Grid ────────────────────────────────────────── -->
+        <div class="col-md-10">
+
+            <!-- Results header -->
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <div class="results-count">
+                    Showing <span th:text="${products.numberOfElements}">0</span> of
+                    <span th:text="${totalResults}">0</span> results
+                    <span th:if="${keyword != null}" class="ms-2">
+                        for <em th:text="${'&quot;' + keyword + '&quot;'}">"keyword"</em>
+                    </span>
+                </div>
+                <!-- Mobile sort -->
+                <div class="d-flex d-md-none gap-2 flex-wrap">
+                    <a th:href="@{/products(keyword=${keyword},categoryId=${selectedCategory},minPrice=${minPrice},maxPrice=${maxPrice},sort='newest')}"
+                       th:classappend="${sort == 'newest'} ? 'active' : ''" class="sort-btn">Newest</a>
+                    <a th:href="@{/products(keyword=${keyword},categoryId=${selectedCategory},minPrice=${minPrice},maxPrice=${maxPrice},sort='price_asc')}"
+                       th:classappend="${sort == 'price_asc'} ? 'active' : ''" class="sort-btn">Price ↑</a>
+                    <a th:href="@{/products(keyword=${keyword},categoryId=${selectedCategory},minPrice=${minPrice},maxPrice=${maxPrice},sort='price_desc')}"
+                       th:classappend="${sort == 'price_desc'} ? 'active' : ''" class="sort-btn">Price ↓</a>
+                </div>
+            </div>
+
+            <!-- Active filters display -->
+            <div th:if="${keyword != null or selectedCategory != null or minPrice != null or maxPrice != null}"
+                 class="d-flex flex-wrap gap-2 mb-3">
+                <span class="small text-muted">Active filters:</span>
+                <a th:if="${keyword != null}"
+                   th:href="@{/products(categoryId=${selectedCategory},minPrice=${minPrice},maxPrice=${maxPrice},sort=${sort})}"
+                   class="badge bg-light text-dark border text-decoration-none">
+                    🔍 <span th:text="${keyword}">keyword</span> ✕
+                </a>
+                <a th:if="${selectedCategory != null}"
+                   th:href="@{/products(keyword=${keyword},minPrice=${minPrice},maxPrice=${maxPrice},sort=${sort})}"
+                   class="badge bg-light text-dark border text-decoration-none">
+                    📂 Category ✕
+                </a>
+                <a th:if="${minPrice != null}"
+                   th:href="@{/products(keyword=${keyword},categoryId=${selectedCategory},maxPrice=${maxPrice},sort=${sort})}"
+                   class="badge bg-light text-dark border text-decoration-none">
+                    ₹ Min: <span th:text="${minPrice}">0</span> ✕
+                </a>
+                <a th:if="${maxPrice != null}"
+                   th:href="@{/products(keyword=${keyword},categoryId=${selectedCategory},minPrice=${minPrice},sort=${sort})}"
+                   class="badge bg-light text-dark border text-decoration-none">
+                    ₹ Max: <span th:text="${maxPrice}">0</span> ✕
+                </a>
+            </div>
+
+            <!-- Product Grid -->
+            <div th:if="${!products.empty}" class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
+                <div class="col" th:each="product : ${products}">
+                    <div class="product-card h-100">
+                        <div class="product-img-wrap">
+                            <!-- Wishlist Button -->
+                            <div class="wishlist-btn"
+                                 th:data-product-id="${product.id}"
+                                 onclick="event.preventDefault(); event.stopPropagation(); toggleWishlist(this);">
+                                <i th:class="${#lists.contains(wishlistedIds, product.id)} ? 'bi bi-heart-fill text-danger' : 'bi bi-heart text-secondary'"></i>
+                            </div>
+                            <a th:href="@{'/products/' + ${product.id}}">
+                                <img th:src="@{${product.imageUrl != null ? product.imageUrl : '/images/placeholder.png'}}"
+                                     th:alt="${product.name}" loading="lazy">
+                            </a>
+                        </div>
+                        <div class="product-body">
+                            <div class="product-cat-badge" th:text="${product.category != null ? product.category.name : 'Organic'}">Category</div>
+                            <div class="product-name">
+                                <a th:href="@{'/products/' + ${product.id}}" class="text-decoration-none text-dark"
+                                   th:text="${product.name}">Product Name</a>
+                            </div>
+                            <div class="product-vendor">
+                                <i class="bi bi-shop me-1"></i>
+                                <span th:text="${product.vendor != null ? product.vendor.fullName : 'OrganicWorld'}">Vendor</span>
+                            </div>
+                            <div class="d-flex align-items-baseline flex-wrap">
+                                <span class="product-price">₹<span th:text="${product.price}">0</span></span>
+                                <span class="product-mrp">₹<span th:text="${#numbers.formatDecimal(product.price * 1.4, 1, 0)}">0</span></span>
+                                <span class="discount-pill">40% OFF</span>
+                            </div>
+                            <p class="small text-success mt-1 mb-0"><i class="bi bi-truck me-1"></i>FREE Delivery</p>
+                            <form th:action="@{/cart/add}" method="post">
+                                <input type="hidden" name="productId" th:value="${product.id}">
+                                <button type="submit" class="btn-add-cart">Add to Cart</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div th:if="${products.empty}" class="empty-state">
+                <div class="icon"><i class="bi bi-search"></i></div>
+                <h4>No products found</h4>
+                <p>Try adjusting your search terms or removing some filters.</p>
+                <a href="/products" class="btn btn-success rounded-pill px-4 mt-2">Browse All Products</a>
+            </div>
+
+            <!-- Pagination -->
+            <div th:if="${products.totalPages > 1}" class="mt-4 d-flex justify-content-center">
+                <nav>
+                    <ul class="pagination">
+                        <li class="page-item" th:classappend="${!products.hasPrevious()} ? 'disabled' : ''">
+                            <a class="page-link"
+                               th:href="@{/products(page=${products.number - 1},size=${products.size},keyword=${keyword},categoryId=${selectedCategory},minPrice=${minPrice},maxPrice=${maxPrice},sort=${sort})}">
+                                &laquo;
+                            </a>
+                        </li>
+                        <li class="page-item"
+                            th:each="i : ${#numbers.sequence(0, products.totalPages - 1)}"
+                            th:if="${i >= products.number - 2 and i <= products.number + 2}"
+                            th:classappend="${i == products.number} ? 'active' : ''">
+                            <a class="page-link"
+                               th:href="@{/products(page=${i},size=${products.size},keyword=${keyword},categoryId=${selectedCategory},minPrice=${minPrice},maxPrice=${maxPrice},sort=${sort})}"
+                               th:text="${i + 1}">1</a>
+                        </li>
+                        <li class="page-item" th:classappend="${!products.hasNext()} ? 'disabled' : ''">
+                            <a class="page-link"
+                               th:href="@{/products(page=${products.number + 1},size=${products.size},keyword=${keyword},categoryId=${selectedCategory},minPrice=${minPrice},maxPrice=${maxPrice},sort=${sort})}">
+                                &raquo;
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // ── Wishlist toggle ────────────────────────────────────────────────
+    function toggleWishlist(element) {
+        const productId = element.getAttribute('data-product-id');
+        const icon = element.querySelector('i');
+        fetch('/customer/wishlist/toggle/' + productId, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    icon.className = data.added ? 'bi bi-heart-fill text-danger' : 'bi bi-heart text-secondary';
+                    showToast(data.message);
+                } else { window.location.href = '/login'; }
+            });
+    }
+
+    // ── Live search suggestions (debounce) ─────────────────────────────
+    let debounceTimer;
+    document.getElementById('searchKeyword').addEventListener('input', function () {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            const val = this.value.trim();
+            if (val.length >= 1) {
+                document.getElementById('searchForm').submit();
+            }
+        }, 500);
+    });
+
+    // ── Toast ──────────────────────────────────────────────────────────
+    function showToast(message) {
+        let c = document.getElementById('toast-c');
+        if (!c) {
+            c = document.createElement('div');
+            c.id = 'toast-c';
+            c.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:9999';
+            document.body.appendChild(c);
+        }
+        const t = document.createElement('div');
+        t.className = 'alert alert-success alert-dismissible fade show shadow rounded-3 py-2 px-3 small mb-2';
+        t.innerHTML = `<i class="bi bi-check-circle-fill me-2"></i>${message}`;
+        c.appendChild(t);
+        setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 2500);
+    }
+</script>
+</body>
+</html>

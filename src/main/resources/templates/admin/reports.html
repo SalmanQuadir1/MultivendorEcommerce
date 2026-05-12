@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Reports & Analytics Center | OrganicWorld</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #15803d;
+            --primary-light: rgba(21, 128, 61, 0.08);
+            --success: #166534;
+            --success-light: rgba(22, 101, 52, 0.08);
+            --warning: #b45309;
+            --warning-light: rgba(180, 83, 9, 0.08);
+            --info: #06b6d4;
+            --info-light: rgba(6, 182, 212, 0.08);
+            --danger: #ef4444;
+            --danger-light: rgba(239, 68, 68, 0.08);
+            --dark: #14532d;
+            --gray-light: #f8fafc;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+
+
+        .main-content {
+            margin-left: 280px;
+            flex-grow: 1;
+            padding: 40px;
+            background-color: #f8fafc;
+            min-height: 100vh;
+        }
+
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 35px;
+        }
+
+        .user-profile-badge {
+            background: #fff;
+            padding: 8px 18px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+        }
+
+        .glass-card {
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .icon-box {
+            width: 54px;
+            height: 54px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="dashboard-container">
+        <!-- Modern Left Sidebar -->
+        <!-- High Fidelity Centralized Sidebar -->
+        <div th:replace="~{fragments/admin_sidebar :: sidebar('reports')}"></div>
+
+        <!-- Main Content Panel -->
+        <main class="main-content">
+            <!-- Top Header Bar -->
+            <header class="top-header">
+                <div>
+                    <h1 class="fw-extrabold text-dark m-0 fs-3" style="font-weight: 800; letter-spacing: -0.5px;">
+                        Reports & Analytics Center</h1>
+                    <p class="text-muted small m-0">Comprehensive business intelligence and performance metrics.</p>
+                </div>
+
+                <div class="user-profile-badge">
+                    <div class="text-end">
+                        <span class="d-block fw-bold text-dark" style="font-size: 13px;"
+                            th:text="${#authentication.principal.fullName}">Administrator</span>
+                        <span class="text-muted small" style="font-size: 11px;">Primary Owner</span>
+                    </div>
+                    <div class="bg-primary text-white icon-box"
+                        style="width: 36px; height: 36px; border-radius: 50%; font-size: 14px;">
+                        <i class="bi bi-person-fill-lock"></i>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Analytics Cards -->
+            <div class="row g-4 mb-4">
+                <!-- Sales Overview -->
+                <div class="col-lg-3">
+                    <div class="card border-0 bg-light rounded-4 p-4 h-100">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="bg-success text-white icon-box rounded-3">
+                                <i class="bi bi-currency-rupee"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold text-dark m-0">Total Revenue</h5>
+                                <span class="text-muted small">All time sales</span>
+                            </div>
+                        </div>
+                        <div class="border-top pt-3">
+                            <h3 class="fw-bold text-success mb-0" th:text="${totalRevenue != null} ? '₹' + ${#numbers.formatDecimal(totalRevenue, 1, 2)} : '₹0.00'">₹0.00</h3>
+                            <span class="text-muted small">From <span th:text="${orders != null ? orders.size() : 0}">0</span> orders</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Products Overview -->
+                <div class="col-lg-3">
+                    <div class="card border-0 bg-light rounded-4 p-4 h-100">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="bg-primary text-white icon-box rounded-3">
+                                <i class="bi bi-boxes"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold text-dark m-0">Products</h5>
+                                <span class="text-muted small">Catalog overview</span>
+                            </div>
+                        </div>
+                        <div class="border-top pt-3">
+                            <h3 class="fw-bold text-primary mb-0" th:text="${products.size()}">0</h3>
+                            <span class="text-muted small"><span th:text="${inventorySummary.lowStockVariants}">0</span>
+                                low stock items</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Orders Overview -->
+                <div class="col-lg-3">
+                    <div class="card border-0 bg-light rounded-4 p-4 h-100">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="bg-warning text-white icon-box rounded-3">
+                                <i class="bi bi-receipt-cutoff"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold text-dark m-0">Orders</h5>
+                                <span class="text-muted small">Order statistics</span>
+                            </div>
+                        </div>
+                        <div class="border-top pt-3">
+                            <h3 class="fw-bold text-warning mb-0" th:text="${orderStatistics.totalOrders}">0</h3>
+                            <span class="text-muted small"><span th:text="${orderStatistics.deliveredOrders}">0</span>
+                                delivered</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users Overview -->
+                <div class="col-lg-3">
+                    <div class="card border-0 bg-light rounded-4 p-4 h-100">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="bg-info text-white icon-box rounded-3">
+                                <i class="bi bi-people-fill"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold text-dark m-0">Users</h5>
+                                <span class="text-muted small">Platform users</span>
+                            </div>
+                        </div>
+                        <div class="border-top pt-3">
+                            <h3 class="fw-bold text-info mb-0" th:text="${users.size()}">0</h3>
+                            <span class="text-muted small"><span th:text="${totalVendors}">0</span> vendors</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="row g-4 mb-4">
+                <!-- Revenue Chart -->
+                <div class="col-lg-8">
+                    <div class="glass-card p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="fw-bold text-dark m-0">Monthly Revenue Trend</h5>
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button"
+                                    data-bs-toggle="dropdown">
+                                    2026
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="#">2024</a></li>
+                                    <li><a class="dropdown-item" href="#">2025</a></li>
+                                    <li><a class="dropdown-item active" href="#">2026</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <canvas id="revenueChart" height="300"></canvas>
+                    </div>
+                </div>
+
+                <!-- Order Status Distribution -->
+                <div class="col-lg-4">
+                    <div class="glass-card p-4">
+                        <h5 class="fw-bold text-dark mb-4">Order Status Distribution</h5>
+                        <canvas id="orderStatusChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Analytics Tables -->
+            <div class="row g-4 mb-4">
+                <!-- Top Selling Products -->
+                <div class="col-lg-6">
+                    <div class="glass-card p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold text-dark m-0">Top Selling Products</h5>
+                            <div class="d-flex gap-2">
+                                <a href="/admin/reports/top-products/download" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold">
+                                    <i class="bi bi-file-earmark-excel-fill me-1"></i> Download Excel
+                                </a>
+                                <button class="btn btn-sm btn-success rounded-pill px-3 fw-bold"
+                                    onclick="shareProductsReport()">
+                                    <i class="bi bi-whatsapp"></i> Share
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-borderless" id="topProductsTable">
+                                <thead>
+                                    <tr class="border-bottom">
+                                        <th class="text-muted small fw-bold">Product</th>
+                                        <th class="text-muted small fw-bold text-end">Units Sold</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="product : ${topSellingProducts}" class="border-bottom">
+                                        <td class="py-3">
+                                            <div class="fw-bold text-dark" th:text="${product.productName}">Product Name
+                                            </div>
+                                        </td>
+                                        <td class="py-3 text-end">
+                                            <span class="badge bg-success" th:text="${product.totalSold}">0</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Customers -->
+                <div class="col-lg-6">
+                    <div class="glass-card p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold text-dark m-0">Top Customers</h5>
+                            <div class="d-flex gap-2">
+                                <a href="/admin/reports/top-customers/download" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold">
+                                    <i class="bi bi-file-earmark-excel-fill me-1"></i> Download Excel
+                                </a>
+                                <button class="btn btn-sm btn-success rounded-pill px-3 fw-bold"
+                                    onclick="shareCustomersReport()">
+                                    <i class="bi bi-whatsapp"></i> Share
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-borderless" id="topCustomersTable">
+                                <thead>
+                                    <tr class="border-bottom">
+                                        <th class="text-muted small fw-bold">Customer</th>
+                                        <th class="text-muted small fw-bold text-end">Total Spent</th>
+                                        <th class="text-muted small fw-bold text-end">Orders</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="customer : ${topCustomers}" class="border-bottom">
+                                        <td class="py-3">
+                                            <div class="fw-bold text-dark" th:text="${customer.customerName}">Customer
+                                                Name</div>
+                                        </td>
+                                        <td class="py-3 text-end fw-bold text-success">
+                                            ₹<span
+                                                th:text="${#numbers.formatDecimal(customer.totalSpent, 1, 2)}">0.00</span>
+                                        </td>
+                                        <td class="py-3 text-end">
+                                            <span class="badge bg-info" th:text="${customer.orderCount}">0</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category Performance -->
+            <div class="row g-4 mb-4">
+                <div class="col-12">
+                    <div class="glass-card p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold text-dark m-0">Category Performance</h5>
+                            <div class="d-flex gap-2">
+                                <a href="/admin/reports/categories/download" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold">
+                                    <i class="bi bi-file-earmark-excel-fill me-1"></i> Download Excel
+                                </a>
+                                <button class="btn btn-sm btn-success rounded-pill px-3 fw-bold"
+                                    onclick="shareCategoryReport()">
+                                    <i class="bi bi-whatsapp"></i> Share
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-borderless" id="categoryTable">
+                                <thead>
+                                    <tr class="border-bottom">
+                                        <th class="text-muted small fw-bold">Category</th>
+                                        <th class="text-muted small fw-bold text-end">Revenue</th>
+                                        <th class="text-muted small fw-bold text-end">Units Sold</th>
+                                        <th class="text-muted small fw-bold text-end">Products</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="category : ${salesByCategory}" class="border-bottom">
+                                        <td class="py-3">
+                                            <div class="fw-bold text-dark" th:text="${category.categoryName}">Category
+                                                Name</div>
+                                        </td>
+                                        <td class="py-3 text-end fw-bold text-success">
+                                            ₹<span
+                                                th:text="${#numbers.formatDecimal(category.revenue, 1, 2)}">0.00</span>
+                                        </td>
+                                        <td class="py-3 text-end">
+                                            <span class="badge bg-warning" th:text="${category.sales}">0</span>
+                                        </td>
+                                        <td class="py-3 text-end">
+                                            <span class="badge bg-secondary" th:text="${category.productCount}">0</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Access to Full Reports -->
+            <div class="glass-card p-4">
+                <h5 class="fw-bold text-dark mb-3">Quick Access to Detailed Reports</h5>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <a href="/admin/dashboard" class="btn btn-outline-primary w-100 py-3 rounded-3 fw-bold">
+                            <i class="bi bi-receipt-cutoff me-2"></i> View Orders
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="/admin/products" class="btn btn-outline-success w-100 py-3 rounded-3 fw-bold">
+                            <i class="bi bi-grid me-2"></i> View Products
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="/admin/users" class="btn btn-outline-info w-100 py-3 rounded-3 fw-bold">
+                            <i class="bi bi-people me-2"></i> View Users
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="/vendor/bulk-upload" class="btn btn-outline-warning w-100 py-3 rounded-3 fw-bold">
+                            <i class="bi bi-cloud-upload me-2"></i> Bulk Upload
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script th:inline="javascript">
+        function exportTableToCSV(tableSelector, filename = 'report.csv') {
+            const table = document.querySelector(tableSelector);
+            if (!table) return;
+            const rows = Array.from(table.querySelectorAll('tr'));
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+
+            rows.forEach(row => {
+                const cols = Array.from(row.querySelectorAll('th, td'));
+                const rowData = cols.map(col => {
+                    let text = col.textContent.replace(/(\r\n|\n|\r)/gm, "").trim();
+                    text = text.replace(/"/g, '""');
+                    return `"\${text}"`;
+                }).join(",");
+                csvContent += rowData + "\\r\\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", filename);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Initialize Charts
+        document.addEventListener('DOMContentLoaded', function () {
+            // Revenue Chart
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            const salesByMonth = /*[[${salesByMonth}]]*/[];
+            const revenueChart = new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: salesByMonth.map(item => item.month),
+                    datasets: [{
+                        label: 'Revenue (₹)',
+                        data: salesByMonth.map(item => parseFloat(item.revenue)),
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function (value) {
+                                    return '₹' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Order Status Chart
+            const statusCtx = document.getElementById('orderStatusChart').getContext('2d');
+            const salesByStatus = /*[[${salesByStatus}]]*/[];
+            const statusChart = new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: salesByStatus.map(item => item.status),
+                    datasets: [{
+                        data: salesByStatus.map(item => parseInt(item.count)),
+                        backgroundColor: [
+                            '#f59e0b', // PENDING
+                            '#10b981', // PAID
+                            '#3b82f6', // SHIPPED
+                            '#8b5cf6', // DELIVERED
+                            '#ef4444'  // CANCELLED
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        });
+
+        function shareProductsReport() {
+            const rows = document.querySelectorAll('#topProductsTable tbody tr');
+            let text = `📈 *OrganicWorld Top Selling Products Report* 📈\n\n`;
+            rows.forEach((row, i) => {
+                const name = row.querySelector('.fw-bold.text-dark').textContent.trim();
+                const sold = row.querySelector('.badge.bg-success').textContent.trim();
+                text += `🔹 *${i+1}. ${name}* — ${sold} units sold\n`;
+            });
+            text += `\nGenerated on: ${new Date().toLocaleDateString()}`;
+            
+            if (navigator.share) {
+                navigator.share({ title: 'Top Selling Products', text: text }).catch(console.error);
+            } else {
+                window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+            }
+        }
+
+        function shareCustomersReport() {
+            const rows = document.querySelectorAll('#topCustomersTable tbody tr');
+            let text = `👑 *OrganicWorld Top Customers Report* 👑\n\n`;
+            rows.forEach((row, i) => {
+                const name = row.querySelector('.fw-bold.text-dark').textContent.trim();
+                const spent = row.querySelector('.text-success').textContent.trim();
+                const count = row.querySelector('.badge.bg-info').textContent.trim();
+                text += `👤 *${i+1}. ${name}* — ${spent} spent (${count} orders)\n`;
+            });
+            text += `\nGenerated on: ${new Date().toLocaleDateString()}`;
+            
+            if (navigator.share) {
+                navigator.share({ title: 'Top Customers Report', text: text }).catch(console.error);
+            } else {
+                window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+            }
+        }
+
+        function shareCategoryReport() {
+            const rows = document.querySelectorAll('#categoryTable tbody tr');
+            let text = `🏷️ *OrganicWorld Category Performance Report* 🏷️\n\n`;
+            rows.forEach((row, i) => {
+                const name = row.querySelector('.fw-bold.text-dark').textContent.trim();
+                const revenue = row.querySelector('.text-success').textContent.trim();
+                const sold = row.querySelector('.badge.bg-warning').textContent.trim();
+                text += `🌿 *${name}* — ${revenue} revenue (${sold} units sold)\n`;
+            });
+            text += `\nGenerated on: ${new Date().toLocaleDateString()}`;
+            
+            if (navigator.share) {
+                navigator.share({ title: 'Category Performance', text: text }).catch(console.error);
+            } else {
+                window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+            }
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

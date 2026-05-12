@@ -1,0 +1,247 @@
+<div th:fragment="header">
+<style>
+        /* REDUNDANT FAIL-SAFE FONT IMPORTS */
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&display=swap');
+
+        /* Force Premium Minimalist Luxury Navbar Styling */
+        .navbar {
+            background-color: rgba(255, 255, 255, 0.97) !important;
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(0,0,0,0.06) !important;
+            box-shadow: 0 4px 25px rgba(0,0,0,0.04) !important;
+            padding-top: 12px !important;
+            padding-bottom: 12px !important;
+            transition: all 0.3s ease;
+            font-family: 'Outfit', sans-serif !important; /* HARD FORCED */
+        }
+
+        .navbar-brand {
+            font-family: 'Playfair Display', serif !important; /* HARD FORCED */
+            color: #0f172a !important;
+            font-weight: 900 !important;
+            letter-spacing: -0.5px !important;
+            font-size: 1.65rem !important;
+            font-style: normal !important;
+        }
+        .navbar-brand span.brand-accent {
+            color: #16a34a !important;
+        }
+
+        .nav-link-custom {
+            font-family: 'Outfit', sans-serif !important; /* HARD FORCED */
+            color: #334155 !important;
+            font-size: 12.5px !important;
+            font-weight: 700 !important;
+            letter-spacing: 1px !important;
+            text-transform: uppercase !important;
+            padding: 8px 12px !important;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+        .nav-link-custom:hover {
+            color: #16a34a !important;
+        }
+        .nav-link-custom::after {
+            content: '';
+            position: absolute;
+            bottom: -12px;
+            left: 16px;
+            right: 16px;
+            height: 3px;
+            background-color: #16a34a;
+            transform: scaleX(0);
+            border-radius: 10px;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .nav-link-custom:hover::after {
+            transform: scaleX(1);
+        }
+
+        /* Sleek Search Bar with fixed height alignment */
+        .premium-search {
+            font-family: 'Outfit', sans-serif !important;
+            background: #f8fafc !important;
+            border-radius: 50px !important;
+            border: 1px solid rgba(0,0,0,0.03) !important;
+            padding-left: 20px !important;
+            font-size: 14px !important;
+            font-weight: 500 !important;
+            height: 40px !important;
+            transition: all 0.3s ease !important;
+            width: 280px !important;
+            color: #0f172a !important;
+        }
+        .premium-search:focus {
+            background: #fff !important;
+            border-color: rgba(22, 163, 74, 0.3) !important;
+            box-shadow: 0 10px 20px rgba(22, 163, 74, 0.05) !important;
+            width: 340px !important;
+        }
+
+        /* Icon Nav Utilities and Label Typography */
+        .icon-nav-link {
+            font-family: 'Outfit', sans-serif !important;
+            color: #1e293b !important;
+            transition: transform 0.2s ease, color 0.2s ease;
+        }
+        .icon-nav-link:hover {
+            color: #16a34a !important;
+            transform: translateY(-2px);
+        }
+        .icon-nav-link span {
+            letter-spacing: 0.5px;
+            font-weight: 700 !important;
+        }
+        .nav-icon-badge {
+            background-color: #ef4444;
+            font-size: 10px;
+            min-width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #fff;
+            font-weight: 800;
+        }
+
+        /* Animated Dropdowns with Outfit refinement */
+        .nav-item.dropdown:hover .dropdown-menu {
+            display: block !important;
+            opacity: 1 !important;
+            transform: translateY(0) !important;
+            visibility: visible !important;
+        }
+        .dropdown-menu-premium {
+            font-family: 'Outfit', sans-serif !important;
+            display: block;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid rgba(0,0,0,0.05) !important;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.08) !important;
+            border-radius: 16px !important;
+            padding: 15px !important;
+            margin-top: 12px !important;
+        }
+        .dropdown-menu-premium .dropdown-item {
+            font-weight: 600;
+            color: #334155;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        .dropdown-menu-premium .dropdown-item:hover {
+            background-color: rgba(22, 163, 74, 0.06);
+            color: #16a34a;
+        }
+    </style>
+    
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container px-4">
+            <a class="navbar-brand me-5 d-flex align-items-center" th:href="@{/}">
+                <!-- Dynamic Branding Injection logic -->
+                <th:block sec:authorize="isAuthenticated()" 
+                          th:with="currentUser=${@userService.findById(#authentication.principal.id)}">
+                    
+                    <!-- Case A: Vendor Specific Overwrite -->
+                    <th:block th:if="${#authorization.expression('hasRole(''VENDOR'')') and currentUser != null and currentUser.logoUrl != null and !currentUser.logoUrl.isEmpty()}">
+                         <div style="width: 38px; height: 38px; border-radius: 50%; background: #fff; padding: 1px; box-shadow: 0 4px 8px rgba(0,0,0,0.08); border: 2px solid #16a34a;" class="me-2 d-flex align-items-center justify-content-center overflow-hidden">
+                             <img th:src="@{${currentUser.logoUrl}}" alt="Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%;">
+                         </div>
+                         <span th:text="${currentUser.fullName}" style="font-size: 1.35rem; font-weight: 700; letter-spacing: -0.5px;">Vendor Shop</span>
+                    </th:block>
+                    
+                    <!-- Case B: Authenticated but No Vendor Overwrite -->
+                    <th:block th:unless="${#authorization.expression('hasRole(''VENDOR'')') and currentUser != null and currentUser.logoUrl != null and !currentUser.logoUrl.isEmpty()}">
+                         <i class="bi bi-leaf-fill text-success me-2" style="font-size: 1.3rem;"></i>
+                         Organic<span class="brand-accent">World</span>
+                    </th:block>
+                </th:block>
+                
+                <!-- Case C: Anonymous Browsers -->
+                <th:block sec:authorize="!isAuthenticated()">
+                    <i class="bi bi-leaf-fill text-success me-2" style="font-size: 1.3rem;"></i>
+                    Organic<span class="brand-accent">World</span>
+                </th:block>
+            </a>
+            
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                <i class="bi bi-list fs-3 text-dark"></i>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <!-- Navigation Items -->
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-1">
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-custom" th:href="@{/products}">Shop All</a>
+                    </li>
+                    <li class="nav-item" th:each="cat : ${@categoryServiceImpl.findAll()}" th:if="${catStat.index < 4}">
+                        <a class="nav-link nav-link-custom" th:href="@{/products(categoryId=${cat.id})}" th:text="${cat.name}">Category</a>
+                    </li>
+                </ul>
+
+                <!-- Search & Icons -->
+                <div class="d-flex align-items-center gap-4">
+                    <!-- Integrated Search -->
+                    <form class="d-none d-lg-block position-relative" action="/products" method="GET">
+                        <input class="form-control premium-search pe-5" type="search" name="search" placeholder="Search gourmet nuts, skincare...">
+                        <i class="bi bi-search position-absolute top-50 translate-middle-y end-0 me-3 text-muted" style="pointer-events: none;"></i>
+                    </form>
+
+                    <ul class="navbar-nav d-flex flex-row align-items-center gap-4">
+                        <!-- Profile / Auth -->
+                        <li class="nav-item text-center" sec:authorize="!isAuthenticated()">
+                            <a class="nav-link icon-nav-link d-flex flex-column align-items-center p-0" th:href="@{/login}">
+                                <i class="bi bi-person fs-4"></i>
+                                <span class="small fw-bold text-uppercase mt-1" style="font-size: 9px;">Sign In</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-item dropdown text-center" sec:authorize="isAuthenticated()">
+                            <a class="nav-link icon-nav-link d-flex flex-column align-items-center p-0 dropdown-toggle no-caret" href="#" role="button">
+                                <i class="bi bi-person-circle fs-4"></i>
+                                <span class="small fw-bold text-uppercase mt-1" style="font-size: 9px;">Account</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-premium" style="min-width: 220px;">
+                                <li class="px-3 py-2 border-bottom mb-2">
+                                    <span class="text-muted small d-block mb-1">Signed in as</span>
+                                    <span class="fw-bold text-dark" th:text="${#authentication.principal instanceof T(com.ecommerce.security.CustomUserDetails) ? #authentication.principal.fullName : #authentication.name}">User</span>
+                                </li>
+                                <li sec:authorize="hasRole('ADMIN')"><a class="dropdown-item rounded-2 py-2 mb-1" th:href="@{/admin/dashboard}"><i class="bi bi-grid me-2"></i> Admin Dashboard</a></li>
+                                <li sec:authorize="hasRole('VENDOR')"><a class="dropdown-item rounded-2 py-2 mb-1" th:href="@{/vendor/dashboard}"><i class="bi bi-shop me-2"></i> Vendor Dashboard</a></li>
+                                <li><a class="dropdown-item rounded-2 py-2 mb-1" th:href="@{/customer/orders}"><i class="bi bi-box-seam me-2"></i> My Orders</a></li>
+                                <li><a class="dropdown-item rounded-2 py-2 mb-1" th:href="@{/customer/addresses}"><i class="bi bi-geo-alt me-2"></i> Addresses</a></li>
+                                <li><hr class="dropdown-divider opacity-50"></li>
+                                <li>
+                                    <form th:action="@{/logout}" method="post">
+                                        <button type="submit" class="btn btn-sm btn-light text-danger w-100 fw-bold border-0 rounded-2 py-2 mt-1">Logout</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- Wishlist -->
+                        <li class="nav-item text-center">
+                            <a class="nav-link icon-nav-link d-flex flex-column align-items-center p-0" th:href="@{/customer/wishlist}">
+                                <i class="bi bi-heart fs-4"></i>
+                                <span class="small fw-bold text-uppercase mt-1" style="font-size: 9px;">Wishlist</span>
+                            </a>
+                        </li>
+
+                        <!-- Bag / Cart -->
+                        <li class="nav-item text-center">
+                            <a class="nav-link icon-nav-link d-flex flex-column align-items-center p-0 position-relative" th:href="@{/cart}">
+                                <i class="bi bi-handbag fs-4"></i>
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill nav-icon-badge"
+                                      th:with="cart=${@cartService.getCartForCurrentUser()}"
+                                      th:if="${cart != null and cart.items != null and !cart.items.empty}"
+                                      th:text="${#lists.size(cart.items)}">0</span>
+                                <span class="small fw-bold text-uppercase mt-1" style="font-size: 9px;">Bag</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+</div>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Pagination Fragment</title>
+</head>
+
+<body>
+    <!-- Pagination Component -->
+    <div th:fragment="pagination(pagedData, baseUrl, pageParam, sizeParam)" class="mt-4"
+        th:if="${pagedData != null and pagedData.class.name.contains('Page') and pagedData.totalPages > 1}">
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <!-- Previous Button -->
+                <li class="page-item" th:classappend="${pagedData.hasPrevious()} ? '' : 'disabled'">
+                    <a class="page-link"
+                        th:href="${pagedData.hasPrevious()} ? @{__${baseUrl}__(__${pageParam ?: 'page'}__=${pagedData.number - 1}, __${sizeParam ?: 'size'}__=${pagedData.size})} : '#'"
+                        aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+
+                <!-- Page Numbers -->
+                <li class="page-item" th:if="${pagedData.totalPages <= 7}"
+                    th:each="i : ${#numbers.sequence(0, pagedData.totalPages - 1)}"
+                    th:classappend="${i == pagedData.number} ? 'active' : ''">
+                    <a class="page-link"
+                        th:href="@{__${baseUrl}__(__${pageParam ?: 'page'}__=${i}, __${sizeParam ?: 'size'}__=${pagedData.size})}"
+                        th:text="${i + 1}"></a>
+                </li>
+
+                <!-- For more than 7 pages, show smart pagination -->
+                <li class="page-item" th:if="${pagedData.totalPages > 7 and pagedData.number < 4}"
+                    th:each="i : ${#numbers.sequence(0, 4)}" th:classappend="${i == pagedData.number} ? 'active' : ''">
+                    <a class="page-link"
+                        th:href="@{__${baseUrl}__(__${pageParam ?: 'page'}__=${i}, __${sizeParam ?: 'size'}__=${pagedData.size})}"
+                        th:text="${i + 1}"></a>
+                </li>
+                <li class="page-item disabled" th:if="${pagedData.totalPages > 7 and pagedData.number < 4}">
+                    <span class="page-link">...</span>
+                </li>
+                <li class="page-item" th:if="${pagedData.totalPages > 7 and pagedData.number < 4}">
+                    <a class="page-link"
+                        th:href="@{__${baseUrl}__(__${pageParam ?: 'page'}__=${pagedData.totalPages - 1}, __${sizeParam ?: 'size'}__=${pagedData.size})}"
+                        th:text="${pagedData.totalPages}"></a>
+                </li>
+
+                <!-- Middle pages -->
+                <li class="page-item"
+                    th:if="${pagedData.totalPages > 7 and pagedData.number >= 4 and pagedData.number < pagedData.totalPages - 4}">
+                    <a class="page-link"
+                        th:href="@{__${baseUrl}__(__${pageParam ?: 'page'}__=0, __${sizeParam ?: 'size'}__=${pagedData.size})}">1</a>
+                </li>
+                <li class="page-item disabled"
+                    th:if="${pagedData.totalPages > 7 and pagedData.number >= 4 and pagedData.number < pagedData.totalPages - 4}">
+                    <span class="page-link">...</span>
+                </li>
+                <li class="page-item" th:if="${pagedData.totalPages > 7 and pagedData.number >= 4 and pagedData.number < pagedData.totalPages - 4}">
+                    <a class="page-link" th:href="@{__${baseUrl}__(__${pageParam ?: 'page'}__=${pagedData.number - 1}, __${sizeParam ?: 'size'}__=${pagedData.size})}"
+                        th:text="${pagedData.number}"></a>
+                </li>
+                <li class="page-item active" th:if="${pagedData.totalPages > 7 and pagedData.number >= 4 and pagedData.number < pagedData.totalPages - 4}">
+                    <a class="page-link" th:href="@{__${baseUrl}__(__${pageParam ?: 'page'}__=${pagedData.number}, __${sizeParam ?: 'size'}__=${pagedData.size})}"
+                        th:text="${pagedData.number + 1}"></a>
+                </li>
+                <li class="page-item" th:if="${pagedData.totalPages > 7 and pagedData.number >= 4 and pagedData.number < pagedData.totalPages - 4}">
+                    <a class="page-link" th:href="@{__${baseUrl}__(__${pageParam ?: 'page'}__=${pagedData.number + 1}, __${sizeParam ?: 'size'}__=${pagedData.size})}"
+                        th:text="${pagedData.number + 2}"></a>
+                </li>
+                <li class="page-item disabled"
+                    th:if="${pagedData.totalPages > 7 and pagedData.number >= 4 and pagedData.number < pagedData.totalPages - 4}">
+                    <span class="page-link">...</span>
+                </li>
+                <li class="page-item"
+                    th:if="${pagedData.totalPages > 7 and pagedData.number >= 4 and pagedData.number < pagedData.totalPages - 4}">
+                    <a class="page-link"
+                        th:href="@{__${baseUrl}__(__${pageParam ?: 'page'}__=${pagedData.totalPages - 1}, __${sizeParam ?: 'size'}__=${pagedData.size})}"
+                        th:text="${pagedData.totalPages}"></a>
+                </li>
+
+                <!-- Last pages -->
+                <li class="page-item"
+                    th:if="${pagedData.totalPages > 7 and pagedData.number >= pagedData.totalPages - 4}">
+                    <a class="page-link"
+                        th:href="@{__${baseUrl}__(__${pageParam ?: 'page'}__=0, __${sizeParam ?: 'size'}__=${pagedData.size})}">1</a>
+                </li>
+                <li class="page-item disabled"
+                    th:if="${pagedData.totalPages > 7 and pagedData.number >= pagedData.totalPages - 4}">
+                    <span class="page-link">...</span>
+                </li>
+                <li class="page-item" th:if="${pagedData.totalPages > 7 and pagedData.number >= pagedData.totalPages - 4}" th:classappend="${pagedData.totalPages - 5 == pagedData.number} ? 'active' : ''">
+                    <a class="page-link" th:href="@{__${baseUrl}__(__${pageParam ?: 'page'}__=${pagedData.totalPages - 5}, __${sizeParam ?: 'size'}__=${pagedData.size})}"
+                        th:text="${pagedData.totalPages - 4}"></a>
+                </li>
+                <li class="page-item" th:if="${pagedData.totalPages > 7 and pagedData.number >= pagedData.totalPages - 4}" th:classappend="${pagedData.totalPages - 4 == pagedData.number} ? 'active' : ''">
+                    <a class="page-link" th:href="@{__${baseUrl}__(__${pageParam ?: 'page'}__=${pagedData.totalPages - 4}, __${sizeParam ?: 'size'}__=${pagedData.size})}"
+                        th:text="${pagedData.totalPages - 3}"></a>
+                </li>
+                <li class="page-item" th:if="${pagedData.totalPages > 7 and pagedData.number >= pagedData.totalPages - 4}" th:classappend="${pagedData.totalPages - 3 == pagedData.number} ? 'active' : ''">
+                    <a class="page-link" th:href="@{__${baseUrl}__(__${pageParam ?: 'page'}__=${pagedData.totalPages - 3}, __${sizeParam ?: 'size'}__=${pagedData.size})}"
+                        th:text="${pagedData.totalPages - 2}"></a>
+                </li>
+                <li class="page-item" th:if="${pagedData.totalPages > 7 and pagedData.number >= pagedData.totalPages - 4}" th:classappend="${pagedData.totalPages - 2 == pagedData.number} ? 'active' : ''">
+                    <a class="page-link" th:href="@{__${baseUrl}__(__${pageParam ?: 'page'}__=${pagedData.totalPages - 2}, __${sizeParam ?: 'size'}__=${pagedData.size})}"
+                        th:text="${pagedData.totalPages - 1}"></a>
+                </li>
+                <li class="page-item" th:if="${pagedData.totalPages > 7 and pagedData.number >= pagedData.totalPages - 4}" th:classappend="${pagedData.totalPages - 1 == pagedData.number} ? 'active' : ''">
+                    <a class="page-link" th:href="@{__${baseUrl}__(__${pageParam ?: 'page'}__=${pagedData.totalPages - 1}, __${sizeParam ?: 'size'}__=${pagedData.size})}"
+                        th:text="${pagedData.totalPages}"></a>
+                </li>
+
+                <!-- Next Button -->
+                <li class="page-item" th:classappend="${pagedData.hasNext()} ? '' : 'disabled'">
+                    <a class="page-link"
+                        th:href="${pagedData.hasNext()} ? @{__${baseUrl}__(__${pageParam ?: 'page'}__=${pagedData.number + 1}, __${sizeParam ?: 'size'}__=${pagedData.size})} : '#'"
+                        aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Page Info -->
+        <div class="text-center text-muted small mt-2">
+            Showing <strong th:text="${pagedData.number * pagedData.size + 1}"></strong> to
+            <strong th:text="${pagedData.number * pagedData.size + pagedData.numberOfElements}"></strong> of
+            <strong th:text="${pagedData.totalElements}"></strong> entries
+            (<strong th:text="${pagedData.totalPages}"></strong> pages)
+        </div>
+    </div>
+
+    <style>
+        .pagination .page-link {
+            color: var(--primary);
+            border-color: #e2e8f0;
+            border-radius: 8px !important;
+            margin: 0 2px;
+            transition: all 0.25s ease;
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .pagination .page-link:hover {
+            background-color: rgba(40, 116, 240, 0.1);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .pagination .page-item.disabled .page-link {
+            color: #94a3b8;
+            background-color: #f8fafc;
+        }
+
+        .btn-group .btn {
+            border-radius: 6px !important;
+            margin: 0 1px;
+        }
+
+        .btn-group .btn.active {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+    </style>
+</body>
+
+</html>

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Orders Received | OrganicWorld</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary: #2874f0;
+            --primary-light: rgba(40, 116, 240, 0.08);
+            --success: #10b981;
+            --success-light: rgba(16, 185, 129, 0.08);
+            --warning: #f59e0b;
+            --warning-light: rgba(245, 158, 11, 0.08);
+            --info: #06b6d4;
+            --info-light: rgba(6, 182, 212, 0.08);
+            --danger: #ef4444;
+            --danger-light: rgba(239, 68, 68, 0.08);
+            --dark: #0f172a;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background-color: var(--dark);
+            color: #fff;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar-brand {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #fff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 40px;
+        }
+
+        .sidebar-brand span { color: #ffe500; }
+
+        .nav-section-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #64748b;
+            font-weight: 700;
+            margin-bottom: 15px;
+            padding-left: 12px;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 16px;
+            color: #94a3b8;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            border-radius: 8px;
+            transition: all 0.25s ease;
+        }
+
+        .sidebar-link:hover, .sidebar-link.active {
+            color: #fff;
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+
+        /* Main Panel */
+        .main-content {
+            margin-left: 280px;
+            flex-grow: 1;
+            padding: 40px;
+            background-color: #f8fafc;
+            min-height: 100vh;
+        }
+
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 35px;
+        }
+
+        .glass-card {
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+        }
+
+        /* Table */
+        .table-modern {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+
+        .table-modern th {
+            color: #64748b;
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: none;
+            padding: 12px 20px;
+        }
+
+        .table-modern tbody tr {
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.01);
+            transition: all 0.25s ease;
+        }
+
+        .table-modern tbody tr:hover {
+            transform: scale(1.005);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        }
+
+        .table-modern td {
+            padding: 18px 20px;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+        }
+
+        .table-modern td:first-child {
+            border-left: 1px solid var(--border-color);
+            border-top-left-radius: 12px;
+            border-bottom-left-radius: 12px;
+        }
+
+        .table-modern td:last-child {
+            border-right: 1px solid var(--border-color);
+            border-top-right-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+
+        .modern-badge {
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge-primary { background: var(--primary-light); color: var(--primary); }
+        .badge-success { background: var(--success-light); color: var(--success); }
+        .badge-warning { background: var(--warning-light); color: var(--warning); }
+        .badge-info { background: var(--info-light); color: var(--info); }
+        .badge-danger { background: var(--danger-light); color: var(--danger); }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    <!-- Left Sidebar -->
+    <div th:replace="~{fragments/vendor_sidebar :: sidebar('orders')}"></div>
+
+    <!-- Main Content Panel -->
+    <main class="main-content">
+        <!-- Top Header Bar -->
+        <header class="top-header">
+            <div>
+                <h1 class="fw-extrabold text-dark m-0 fs-3" style="font-weight: 800; letter-spacing: -0.5px;">Orders Received</h1>
+                <p class="text-muted small m-0">Track customer purchases, dates, and order status updates.</p>
+            </div>
+        </header>
+
+        <!-- Orders List Card -->
+        <div class="glass-card p-4">
+            <div class="table-responsive">
+                <table class="table-modern">
+                    <thead>
+                        <tr>
+                            <th>Order details</th>
+                            <th>Customer info</th>
+                            <th>Product Details</th>
+                            <th class="text-center">Qty</th>
+                            <th class="text-center">Total Price</th>
+                            <th class="text-center">Order Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="item : ${orderItems}">
+                            <td>
+                                <div class="fw-bold text-dark" th:text="'#ORD-' + ${item.order.id}">#ORD-0</div>
+                                <span class="text-muted small" th:text="${#temporals.format(item.order.createdAt, 'dd MMM yyyy, HH:mm')}">Date</span>
+                            </td>
+                            <td>
+                                <div class="fw-bold text-dark" th:text="${item.order.user.fullName}">Customer Name</div>
+                                <span class="text-muted small" th:text="${item.order.user.email}">Email</span>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    <img th:src="@{${item.product.imageUrl != null ? item.product.imageUrl : '/images/placeholder.png'}}" style="width: 48px; height: 48px; object-fit: contain; border-radius: 8px;" class="border bg-light">
+                                    <div>
+                                        <div class="fw-bold text-dark" style="font-size: 13px;" th:text="${item.product.name}">Product Name</div>
+                                        <span class="text-muted small" style="font-size: 12px;" th:text="'Price: ₹' + ${item.price}">Price</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-center fw-bold" th:text="${item.quantity}">1</td>
+                            <td class="text-center fw-bold text-dark" th:text="'₹' + ${item.price * item.quantity}">₹0</td>
+                            <td class="text-center">
+                                <span th:class="'modern-badge badge-' + ${item.order.status.name() == 'PAID' ? 'success' : (item.order.status.name() == 'DELIVERED' ? 'info' : (item.order.status.name() == 'CANCELLED' ? 'danger' : 'warning'))}" th:text="${item.order.status}">Status</span>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(orderItems)}">
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="bi bi-cart-x fs-1 mb-3 text-light"></i>
+                                <h5>No orders yet</h5>
+                                <p>When customers buy your products, they will appear here.</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

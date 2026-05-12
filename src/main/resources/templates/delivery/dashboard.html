@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Delivery Partner Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background: #0f172a; color: #e2e8f0; font-family: 'Segoe UI', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .card { background: rgba(30,41,59,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; padding: 48px; text-align: center; max-width: 500px; backdrop-filter: blur(12px); }
+        .icon-circle { width: 96px; height: 96px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 28px; font-size: 40px; box-shadow: 0 0 40px rgba(245,158,11,0.3); }
+        h1 { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+        p { color: #94a3b8; }
+        .badge-role { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); border-radius: 20px; padding: 6px 16px; font-size: 12px; font-weight: 700; letter-spacing: 1px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="icon-circle"><i class="bi bi-truck"></i></div>
+        <span class="badge-role mb-3 d-inline-block">DELIVERY PARTNER</span>
+        <h1>Delivery Dashboard</h1>
+        <p class="mb-4">Your delivery management portal is coming soon. You'll be able to view assigned deliveries, update statuses, and manage pickups here.</p>
+        <a href="/logout" class="btn btn-outline-warning btn-sm rounded-pill px-4">
+            <i class="bi bi-box-arrow-right me-2"></i>Logout
+        </a>
+    </div>
+</body>
+</html>

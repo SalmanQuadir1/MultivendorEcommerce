@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Branding | OrganicWorld System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary: #2874f0;
+            --dark: #0f172a;
+            --border-color: #e2e8f0;
+        }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+            margin: 0;
+        }
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .main-content {
+            margin-left: 280px; 
+            flex-grow: 1; 
+            padding: 40px; 
+            background-color: #f8fafc;
+        }
+        .glass-card {
+            background: #fff; 
+            border-radius: 24px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+            padding: 40px;
+        }
+        .preview-wrapper {
+            position: relative;
+            margin: 0 auto 24px auto;
+            width: 160px;
+            height: 160px;
+        }
+        .preview-box {
+            width: 100%; 
+            height: 100%; 
+            border-radius: 50%;
+            overflow: hidden; 
+            border: 5px solid #fff;
+            box-shadow: 0 12px 35px rgba(40, 116, 240, 0.15);
+            background: #f1f5f9;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+        }
+        .preview-box img {
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover;
+        }
+        .upload-trigger {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid #fff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .upload-trigger:hover {
+            transform: scale(1.1);
+            background: #1c5cc7;
+        }
+        .form-control:focus {
+            box-shadow: 0 0 0 4px rgba(40, 116, 240, 0.1);
+            border-color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    <!-- Injected Modern Sidebar Fragment -->
+    <div th:replace="~{fragments/admin_sidebar :: sidebar('profile')}"></div>
+
+    <main class="main-content">
+        <div class="mb-4">
+            <h1 class="fw-extrabold text-dark m-0 fs-3" style="font-weight: 800; letter-spacing: -0.5px;">Manage Site Admin Identity</h1>
+            <p class="text-muted small m-0">Control the master administrator logo and displayed name seen across global navigation blocks.</p>
+        </div>
+
+        <!-- Messages -->
+        <div th:if="${success}" class="alert alert-success border-0 shadow-sm rounded-3 mb-4 py-3 d-flex align-items-center" role="alert">
+            <i class="bi bi-check-circle-fill fs-5 me-3"></i>
+            <div class="fw-bold" th:text="${success}">Successful</div>
+        </div>
+        
+        <div th:if="${error}" class="alert alert-danger border-0 shadow-sm rounded-3 mb-4 py-3 d-flex align-items-center" role="alert">
+            <i class="bi bi-exclamation-triangle-fill fs-5 me-3"></i>
+            <div class="fw-bold" th:text="${error}">Error condition</div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-7">
+                <div class="glass-card">
+                    <form th:action="@{/admin/profile/update}" method="post" enctype="multipart/form-data">
+                        
+                        <div class="text-center border-bottom pb-4 mb-5">
+                            <div class="preview-wrapper">
+                                <div class="preview-box">
+                                    <img id="imgPreview" th:src="${user.logoUrl != null && !user.logoUrl.isEmpty() ? user.logoUrl : '/images/placeholder.png'}" 
+                                         onerror="this.src='https://via.placeholder.com/150?text=SYSTEM'" alt="Logo Preview">
+                                </div>
+                                <label for="logoFileInput" class="upload-trigger">
+                                    <i class="bi bi-camera-fill"></i>
+                                </label>
+                            </div>
+                            <h4 class="fw-bold mb-1 text-dark" th:text="${user.fullName}">Admin Name</h4>
+                            <span class="badge bg-primary rounded-pill px-3 py-2 mb-3 text-uppercase fw-bold" style="font-size: 10px; letter-spacing: 1px;">Root Authority</span>
+                            <input type="file" id="logoFileInput" name="logoFile" class="d-none" accept="image/*" onchange="previewImage(event)">
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-dark small text-uppercase tracking-wider" style="letter-spacing: 0.5px;">Primary Administrator Name</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-light border-2 border-end-0"><i class="bi bi-person text-muted"></i></span>
+                                <input type="text" class="form-control border-2 border-start-0 bg-light" 
+                                       name="fullName" th:value="${user.fullName}" required placeholder="System Admin Name">
+                            </div>
+                            <div class="form-text text-muted small mt-2">This full name serves as the root profile identity across headers and invoices.</div>
+                        </div>
+
+                        <div class="mb-5">
+                            <label class="form-label fw-bold text-dark small text-uppercase" style="letter-spacing: 0.5px;">Registered Email (System Read-Only)</label>
+                            <input type="text" class="form-control form-control-lg border-2 bg-light text-muted" 
+                                   th:value="${user.email}" disabled>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg py-3 rounded-pill fw-bold shadow-primary-sm">
+                                <i class="bi bi-shield-check me-2"></i> Save Administrative Settings
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Tips Column -->
+            <div class="col-lg-5">
+                <div class="alert bg-white border shadow-sm rounded-4 p-4">
+                    <div class="d-flex gap-3 mb-3">
+                        <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px; flex-shrink: 0;">
+                            <i class="bi bi-info-circle-fill fs-5"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold m-0 mt-1 text-dark">Dynamic Branding Propagation</h6>
+                            <p class="text-muted small m-0">System Info</p>
+                        </div>
+                    </div>
+                    <ul class="small text-muted lh-lg ps-3">
+                        <li>Your <strong>Custom Logo</strong> will update across all top navigation bars instantly upon upload.</li>
+                        <li>Transparent PNG or high-contrast white/light logos perform best on dark sidebars.</li>
+                        <li>The <strong>Administrator Name</strong> directly propagates to transactional templates and system audit trails.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    function previewImage(event) {
+        const reader = new FileReader();
+        reader.onload = function(){
+            const output = document.getElementById('imgPreview');
+            output.src = reader.result;
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Low Stock Alerts - Vendor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand" href="/">E-COMMERCE <span class="text-muted fs-6">Vendor</span></a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item">
+                    <span class="nav-link text-muted me-3">Welcome, <span th:text="${#authentication.principal.username}">Vendor</span></span>
+                </li>
+                <li class="nav-item">
+                    <form th:action="@{/logout}" method="post" class="d-inline">
+                        <button type="submit" class="btn amz-btn-secondary btn-sm px-4">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="vendor-layout">
+    <!-- Sidebar -->
+    <div class="vendor-sidebar">
+        <div class="nav flex-column">
+            <a class="nav-link" th:href="@{/vendor/dashboard}">
+                <i class="fas fa-home me-2"></i> Dashboard
+            </a>
+            <a class="nav-link" th:href="@{/vendor/products}">
+                <i class="fas fa-box me-2"></i> Products
+            </a>
+            <a class="nav-link active" th:href="@{/vendor/inventory}">
+                <i class="fas fa-warehouse me-2"></i> Inventory
+            </a>
+            <a class="nav-link" th:href="@{/vendor/orders}">
+                <i class="fas fa-shopping-bag me-2"></i> Orders
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="vendor-content">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/vendor/inventory}" class="amz-link">Inventory</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Low Stock Alerts</li>
+            </ol>
+        </nav>
+
+        <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
+            <h2 class="mb-0 fw-bold text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Low Stock Items</h2>
+        </div>
+
+        <div class="alert alert-warning border-0 border-start border-warning border-4 shadow-sm" role="alert">
+            <i class="fas fa-info-circle me-2"></i> These items have a stock quantity of 10 or less and require your immediate attention.
+        </div>
+
+        <div class="glass-table mt-4 border-top border-danger border-3">
+            <table class="table table-hover mb-0">
+                <thead>
+                <tr>
+                    <th style="width: 80px;">Image</th>
+                    <th>Product Details</th>
+                    <th class="text-center">Current Stock</th>
+                    <th class="text-center" style="width: 250px;">Update Stock</th>
+                </tr>
+                </thead>
+                <tbody>
+                 <tr th:each="variant : ${variants}">
+                    <td>
+                        <img th:if="${variant.product.imageUrl}" th:src="${variant.product.imageUrl}" class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;">
+                        <div th:unless="${variant.product.imageUrl}" class="bg-light d-flex align-items-center justify-content-center text-muted img-thumbnail" style="width: 60px; height: 60px;">
+                            <i class="fas fa-image"></i>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="fw-bold text-dark" th:text="${variant.product.name}">Product Name</div>
+                        <div class="text-muted small mt-1">
+                            <span th:text="${variant.product.category != null ? variant.product.category.name : 'Uncategorized'}">Category</span> |
+                            <span class="fw-bold text-secondary" th:text="'Size: ' + ${variant.size}">Size</span> |
+                            <span class="text-muted" th:text="'SKU: ' + ${variant.sku}">SKU</span>
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge bg-danger rounded-pill px-3 py-2 fs-6" th:text="${variant.stock}">0</span>
+                    </td>
+                    <td>
+                        <form th:action="@{/vendor/inventory/update/{id}(id=${variant.id})}" method="post" class="d-flex align-items-center justify-content-center gap-2">
+                            <input type="number" name="stock" class="form-control form-control-sm text-center border-danger" style="width: 80px;" th:value="${variant.stock}" min="0" required>
+                            <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-save me-1"></i>Update</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(variants)}">
+                    <td colspan="4" class="text-center py-5 text-muted">
+                        <i class="fas fa-check-circle fs-1 mb-3 text-success"></i>
+                        <h5>All Good!</h5>
+                        <p>You have no low stock items.</p>
+                        <a th:href="@{/vendor/inventory}" class="btn amz-btn-primary mt-2">Back to Inventory</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
