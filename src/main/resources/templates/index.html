@@ -241,11 +241,28 @@
             background: white;
             border-radius: 16px;
             overflow: hidden;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
             text-decoration: none;
             color: inherit;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            border: 1px solid rgba(0,0,0,0.05);
+            position: relative;
+        }
+
+        .product-badge {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(4px);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--text-dark);
+            z-index: 2;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
         .product-card:hover {
@@ -505,20 +522,32 @@
     </section>
 
     <!-- Trust Strip -->
-    <div style="background:#fff;border-bottom:1px solid #e5e7eb;padding:16px 0;">
+    <div style="background: white; border-bottom: 1px solid rgba(0,0,0,0.05); padding: 24px 0; box-shadow: 0 4px 20px rgba(0,0,0,0.02); position: relative; z-index: 10;">
         <div class="container">
-            <div class="row text-center g-2">
-                <div class="col-6 col-md-3 d-flex align-items-center justify-content-center gap-2">
-                    <i class="bi bi-truck fs-5 text-success"></i><span class="small fw-600">Free Delivery over ₹499</span>
+            <div class="row text-center g-4">
+                <div class="col-6 col-md-3 d-flex flex-column align-items-center justify-content-center gap-2">
+                    <div style="width: 48px; height: 48px; background: var(--light-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary-green); font-size: 1.25rem; margin-bottom: 4px;">
+                        <i class="bi bi-truck"></i>
+                    </div>
+                    <span class="small fw-bold" style="letter-spacing: 0.5px;">FREE DELIVERY OVER ₹499</span>
                 </div>
-                <div class="col-6 col-md-3 d-flex align-items-center justify-content-center gap-2">
-                    <i class="bi bi-arrow-return-left fs-5 text-success"></i><span class="small fw-600">Easy 7-Day Returns</span>
+                <div class="col-6 col-md-3 d-flex flex-column align-items-center justify-content-center gap-2">
+                    <div style="width: 48px; height: 48px; background: var(--light-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary-green); font-size: 1.25rem; margin-bottom: 4px;">
+                        <i class="bi bi-arrow-return-left"></i>
+                    </div>
+                    <span class="small fw-bold" style="letter-spacing: 0.5px;">EASY 7-DAY RETURNS</span>
                 </div>
-                <div class="col-6 col-md-3 d-flex align-items-center justify-content-center gap-2">
-                    <i class="bi bi-shield-check fs-5 text-success"></i><span class="small fw-600">100% Secure Payments</span>
+                <div class="col-6 col-md-3 d-flex flex-column align-items-center justify-content-center gap-2">
+                    <div style="width: 48px; height: 48px; background: var(--light-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary-green); font-size: 1.25rem; margin-bottom: 4px;">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <span class="small fw-bold" style="letter-spacing: 0.5px;">100% SECURE PAYMENTS</span>
                 </div>
-                <div class="col-6 col-md-3 d-flex align-items-center justify-content-center gap-2">
-                    <i class="bi bi-headset fs-5 text-success"></i><span class="small fw-600">24/7 Customer Support</span>
+                <div class="col-6 col-md-3 d-flex flex-column align-items-center justify-content-center gap-2">
+                    <div style="width: 48px; height: 48px; background: var(--light-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary-green); font-size: 1.25rem; margin-bottom: 4px;">
+                        <i class="bi bi-headset"></i>
+                    </div>
+                    <span class="small fw-bold" style="letter-spacing: 0.5px;">24/7 CUSTOMER SUPPORT</span>
                 </div>
             </div>
         </div>
@@ -570,6 +599,7 @@
                 <div th:if="${newArrivals != null and !newArrivals.empty}" class="product-grid">
                     <a th:each="product : ${newArrivals}" th:href="@{'/products/' + ${product.id}}" class="product-card">
                         <div class="product-image">
+                            <div class="product-badge" style="color: #15803d;">NEW</div>
                             <button class="wishlist-btn"
                                     th:data-product-id="${product.id}"
                                     onclick="event.preventDefault(); event.stopPropagation(); toggleWishlist(this);">
@@ -615,6 +645,7 @@
                 <div th:if="${bestSellers != null and !bestSellers.empty}" class="product-grid">
                     <a th:each="product : ${bestSellers}" th:href="@{'/products/' + ${product.id}}" class="product-card">
                         <div class="product-image">
+                            <div class="product-badge" style="color: #fbbf24; background: rgba(0,0,0,0.8); color: white;">BEST SELLER</div>
                             <button class="wishlist-btn"
                                     th:data-product-id="${product.id}"
                                     onclick="event.preventDefault(); event.stopPropagation(); toggleWishlist(this);">
@@ -682,55 +713,55 @@
         </section>
 
         <!-- Why Choose Us -->
-        <section style="padding:4rem 0;background:#f0fdf4;">
+        <section style="padding:5rem 0;background:#f8fafc;">
             <div class="container">
                 <div class="section-header">
                     <h2 class="section-title">Why Choose OrganicWorld?</h2>
                     <p class="section-subtitle">We're committed to bringing you the finest organic products with full transparency.</p>
                 </div>
                 <div class="row g-4 mt-2">
-                    <div class="col-md-3 col-6 text-center">
-                        <div style="width:70px;height:70px;background:#15803d;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px;color:#fff;">
+                    <div class="col-md-3 col-6 text-center feature-card" style="transition: transform 0.3s; padding: 1.5rem; border-radius: 16px; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+                        <div style="width:70px;height:70px;background:var(--light-green);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px;color:var(--primary-green);">
                             <i class="bi bi-award-fill"></i>
                         </div>
-                        <h5 class="fw-bold">100% Organic</h5>
-                        <p class="text-muted small">Certified organic products sourced directly from trusted farms.</p>
+                        <h5 class="fw-bold" style="color: var(--text-dark);">100% Organic</h5>
+                        <p class="text-muted small mb-0">Certified organic products sourced directly from trusted farms.</p>
                     </div>
-                    <div class="col-md-3 col-6 text-center">
-                        <div style="width:70px;height:70px;background:#15803d;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px;color:#fff;">
+                    <div class="col-md-3 col-6 text-center feature-card" style="transition: transform 0.3s; padding: 1.5rem; border-radius: 16px; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+                        <div style="width:70px;height:70px;background:var(--light-green);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px;color:var(--primary-green);">
                             <i class="bi bi-box-seam-fill"></i>
                         </div>
-                        <h5 class="fw-bold">Fresh Packaging</h5>
-                        <p class="text-muted small">Vacuum-sealed for maximum freshness and shelf life.</p>
+                        <h5 class="fw-bold" style="color: var(--text-dark);">Fresh Packaging</h5>
+                        <p class="text-muted small mb-0">Vacuum-sealed for maximum freshness and shelf life.</p>
                     </div>
-                    <div class="col-md-3 col-6 text-center">
-                        <div style="width:70px;height:70px;background:#15803d;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px;color:#fff;">
+                    <div class="col-md-3 col-6 text-center feature-card" style="transition: transform 0.3s; padding: 1.5rem; border-radius: 16px; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+                        <div style="width:70px;height:70px;background:var(--light-green);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px;color:var(--primary-green);">
                             <i class="bi bi-currency-rupee"></i>
                         </div>
-                        <h5 class="fw-bold">Best Prices</h5>
-                        <p class="text-muted small">Farm-to-home pricing. No middlemen, no markups.</p>
+                        <h5 class="fw-bold" style="color: var(--text-dark);">Best Prices</h5>
+                        <p class="text-muted small mb-0">Farm-to-home pricing. No middlemen, no markups.</p>
                     </div>
-                    <div class="col-md-3 col-6 text-center">
-                        <div style="width:70px;height:70px;background:#15803d;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px;color:#fff;">
+                    <div class="col-md-3 col-6 text-center feature-card" style="transition: transform 0.3s; padding: 1.5rem; border-radius: 16px; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+                        <div style="width:70px;height:70px;background:var(--light-green);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px;color:var(--primary-green);">
                             <i class="bi bi-patch-check-fill"></i>
                         </div>
-                        <h5 class="fw-bold">Quality Tested</h5>
-                        <p class="text-muted small">Each batch lab-tested for purity, nutrition, and safety.</p>
+                        <h5 class="fw-bold" style="color: var(--text-dark);">Quality Tested</h5>
+                        <p class="text-muted small mb-0">Each batch lab-tested for purity, nutrition, and safety.</p>
                     </div>
                 </div>
             </div>
         </section>
 
         <!-- Promo Banner -->
-        <section style="background:linear-gradient(135deg,#166534,#15803d);padding:40px 0;text-align:center;color:#fff;">
+        <section style="background: linear-gradient(135deg, var(--dark-green), var(--primary-green)); padding: 60px 0; text-align: center; color: white;">
             <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-md-8 text-md-start mb-3 mb-md-0">
-                        <h3 class="fw-800 mb-1">🎉 First Order Special — Get 20% OFF!</h3>
-                        <p class="mb-0 opacity-75">Use code <strong>ORGANIC20</strong> at checkout. Valid on orders above ₹499.</p>
+                <div class="row align-items-center justify-content-between">
+                    <div class="col-lg-8 text-lg-start mb-4 mb-lg-0">
+                        <h3 class="fw-800 mb-2" style="font-family: 'Playfair Display', serif; font-size: 2.2rem; letter-spacing: -0.5px;">🎉 First Order Special — Get 20% OFF!</h3>
+                        <p class="mb-0 fs-5" style="opacity: 0.9;">Use code <strong style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 4px; letter-spacing: 1px;">ORGANIC20</strong> at checkout. Valid on orders above ₹499.</p>
                     </div>
-                    <div class="col-md-4 text-md-end">
-                        <a href="/products" class="btn btn-light text-success fw-bold rounded-pill px-4 py-2">Shop Now →</a>
+                    <div class="col-lg-4 text-lg-end">
+                        <a href="/products" class="btn btn-light fw-bold rounded-pill px-5 py-3" style="color: var(--primary-green); font-size: 1.1rem; box-shadow: 0 10px 25px rgba(0,0,0,0.15); transition: transform 0.3s;">Shop Now <i class="bi bi-arrow-right ms-2"></i></a>
                     </div>
                 </div>
             </div>
@@ -745,32 +776,32 @@
                 </div>
                 <div class="row g-4 mt-2">
                     <div class="col-md-4">
-                        <div style="background:#f8fafc;border-radius:16px;padding:24px;border:1px solid #e5e7eb;height:100%;">
-                            <div class="text-warning mb-2">★★★★★</div>
-                            <p class="mb-3 text-muted">"The quality of almonds is exceptional. I can taste the difference from regular store-bought ones. Will definitely reorder!"</p>
-                            <div class="d-flex align-items-center gap-3">
-                                <div style="width:42px;height:42px;background:#15803d;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;">P</div>
-                                <div><div class="fw-bold small">Priya Sharma</div><div class="text-muted" style="font-size:12px;">Mumbai</div></div>
+                        <div style="background:white;border-radius:16px;padding:32px;border:1px solid rgba(0,0,0,0.05);height:100%;box-shadow:0 10px 30px rgba(0,0,0,0.03);transition:transform 0.3s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                            <div class="text-warning mb-3" style="font-size:1.1rem;letter-spacing:2px;">★★★★★</div>
+                            <p class="mb-4 text-muted" style="font-size:1.05rem;line-height:1.6;font-style:italic;">"The quality of almonds is exceptional. I can taste the difference from regular store-bought ones. Will definitely reorder!"</p>
+                            <div class="d-flex align-items-center gap-3 mt-auto">
+                                <div style="width:48px;height:48px;background:var(--light-green);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--primary-green);font-weight:800;font-size:1.2rem;">P</div>
+                                <div><div class="fw-bold" style="color:var(--text-dark);">Priya Sharma</div><div class="text-muted" style="font-size:0.85rem;text-transform:uppercase;letter-spacing:1px;">Mumbai</div></div>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div style="background:#f8fafc;border-radius:16px;padding:24px;border:1px solid #e5e7eb;height:100%;">
-                            <div class="text-warning mb-2">★★★★★</div>
-                            <p class="mb-3 text-muted">"Fast delivery, fresh products, amazing packaging. OrganicWorld is my go-to for all dry fruits now."</p>
-                            <div class="d-flex align-items-center gap-3">
-                                <div style="width:42px;height:42px;background:#15803d;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;">R</div>
-                                <div><div class="fw-bold small">Rahul Verma</div><div class="text-muted" style="font-size:12px;">Delhi</div></div>
+                        <div style="background:white;border-radius:16px;padding:32px;border:1px solid rgba(0,0,0,0.05);height:100%;box-shadow:0 10px 30px rgba(0,0,0,0.03);transition:transform 0.3s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                            <div class="text-warning mb-3" style="font-size:1.1rem;letter-spacing:2px;">★★★★★</div>
+                            <p class="mb-4 text-muted" style="font-size:1.05rem;line-height:1.6;font-style:italic;">"Fast delivery, fresh products, amazing packaging. OrganicWorld is my go-to for all dry fruits now."</p>
+                            <div class="d-flex align-items-center gap-3 mt-auto">
+                                <div style="width:48px;height:48px;background:var(--light-green);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--primary-green);font-weight:800;font-size:1.2rem;">R</div>
+                                <div><div class="fw-bold" style="color:var(--text-dark);">Rahul Verma</div><div class="text-muted" style="font-size:0.85rem;text-transform:uppercase;letter-spacing:1px;">Delhi</div></div>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div style="background:#f8fafc;border-radius:16px;padding:24px;border:1px solid #e5e7eb;height:100%;">
-                            <div class="text-warning mb-2">★★★★☆</div>
-                            <p class="mb-3 text-muted">"Love the variety and the prices are unbeatable for organic products. Customer support was super helpful too."</p>
-                            <div class="d-flex align-items-center gap-3">
-                                <div style="width:42px;height:42px;background:#15803d;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;">A</div>
-                                <div><div class="fw-bold small">Ananya Nair</div><div class="text-muted" style="font-size:12px;">Bangalore</div></div>
+                        <div style="background:white;border-radius:16px;padding:32px;border:1px solid rgba(0,0,0,0.05);height:100%;box-shadow:0 10px 30px rgba(0,0,0,0.03);transition:transform 0.3s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                            <div class="text-warning mb-3" style="font-size:1.1rem;letter-spacing:2px;">★★★★☆</div>
+                            <p class="mb-4 text-muted" style="font-size:1.05rem;line-height:1.6;font-style:italic;">"Love the variety and the prices are unbeatable for organic products. Customer support was super helpful too."</p>
+                            <div class="d-flex align-items-center gap-3 mt-auto">
+                                <div style="width:48px;height:48px;background:var(--light-green);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--primary-green);font-weight:800;font-size:1.2rem;">A</div>
+                                <div><div class="fw-bold" style="color:var(--text-dark);">Ananya Nair</div><div class="text-muted" style="font-size:0.85rem;text-transform:uppercase;letter-spacing:1px;">Bangalore</div></div>
                             </div>
                         </div>
                     </div>
@@ -779,28 +810,30 @@
         </section>
 
         <!-- Newsletter -->
-        <section style="padding:3.5rem 0;background:#fef9c3;">
+        <section style="padding:5rem 0;background:var(--light-green);">
             <div class="container text-center">
-                <h3 class="fw-bold mb-2">📬 Stay in the Loop</h3>
-                <p class="text-muted mb-4">Get exclusive deals, new arrivals, and health tips straight to your inbox.</p>
-                <form class="d-flex justify-content-center gap-2 flex-wrap" onsubmit="handleNewsletter(event)">
-                    <input type="email" placeholder="Enter your email address" required
-                           style="border:2px solid #15803d;border-radius:50px;padding:10px 24px;width:320px;outline:none;font-size:14px;">
-                    <button type="submit" style="background:#15803d;color:#fff;border:none;border-radius:50px;padding:10px 28px;font-weight:700;cursor:pointer;">
-                        Subscribe
-                    </button>
-                </form>
+                <div style="max-width: 600px; margin: 0 auto;">
+                    <h3 class="fw-bold mb-3" style="font-family: 'Playfair Display', serif; font-size: 2.2rem; color: var(--primary-green);">Stay in the Loop</h3>
+                    <p class="text-muted mb-4 fs-5">Join our community to receive exclusive deals, new arrivals, and health tips straight to your inbox.</p>
+                    <form class="d-flex justify-content-center gap-2 flex-wrap" onsubmit="handleNewsletter(event)">
+                        <input type="email" placeholder="Enter your email address" required
+                               style="border:none;border-radius:50px;padding:16px 28px;width:380px;outline:none;font-size:1rem;box-shadow:0 4px 15px rgba(0,0,0,0.05);">
+                        <button type="submit" style="background:var(--primary-green);color:#fff;border:none;border-radius:50px;padding:16px 36px;font-weight:700;cursor:pointer;box-shadow:0 4px 15px rgba(21,128,61,0.3);transition:transform 0.3s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                            Subscribe
+                        </button>
+                    </form>
+                </div>
             </div>
         </section>
 
         <!-- CTA Section -->
-        <section class="cta-section">
-            <div class="container">
-                <h2 class="cta-title">Start Your Organic Journey Today</h2>
-                <p class="cta-subtitle">Join thousands of health-conscious families who trust OrganicWorld for premium organic products.</p>
-                <a href="/products" class="cta-btn">Explore All Products</a>
-                <div class="mt-3" sec:authorize="isAnonymous()">
-                    <a href="/register" class="text-success text-decoration-none small">New here? Create a free account →</a>
+        <section class="cta-section" style="padding: 6rem 0; background: linear-gradient(180deg, #f8fafc 0%, white 100%);">
+            <div class="container text-center">
+                <h2 class="cta-title" style="letter-spacing: -0.5px;">Start Your Organic Journey Today</h2>
+                <p class="cta-subtitle fs-5" style="max-width: 650px; margin: 0 auto 2.5rem auto;">Join thousands of health-conscious families who trust OrganicWorld for premium organic products.</p>
+                <a href="/products" class="cta-btn" style="padding: 16px 48px;">Explore All Products</a>
+                <div class="mt-4" sec:authorize="isAnonymous()">
+                    <a href="/register" class="text-success text-decoration-none fw-bold" style="letter-spacing: 0.5px; border-bottom: 2px solid var(--light-green); padding-bottom: 2px;">New here? Create a free account <i class="bi bi-arrow-right"></i></a>
                 </div>
             </div>
         </section>
