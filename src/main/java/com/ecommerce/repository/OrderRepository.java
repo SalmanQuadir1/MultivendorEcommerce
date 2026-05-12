@@ -10,6 +10,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByUserId(Long userId);
     Page<Order> findByUserId(Long userId, Pageable pageable);
 
+    @Query("SELECT o FROM Order o LEFT JOIN FETCH o.items WHERE o.id = :id")
+    java.util.Optional<Order> findByIdWithItems(@org.springframework.data.repository.query.Param("id") Long id);
+
     @Query("SELECT o FROM Order o LEFT JOIN FETCH o.items WHERE o.user.id = :userId")
     List<Order> findByUserIdWithItems(Long userId);
 

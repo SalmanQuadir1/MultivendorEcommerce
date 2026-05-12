@@ -32,7 +32,13 @@ public class RazorpayServiceImpl implements RazorpayService {
 
     @Override
     public Payment createRazorpayOrder(Order order) throws RazorpayException {
+        Payment existing = paymentRepository.findByOrderId(order.getId()).orElse(null);
+
         if (keyId == null || keyId.equals("rzp_test_PlaceholderKey") || keySecret == null || keySecret.equals("PlaceholderSecret")) {
+            if (existing != null) {
+                existing.setAmount(order.getTotalAmount());
+                return paymentRepository.save(existing);
+            }
             Payment payment = new Payment();
             payment.setOrder(order);
             payment.setRazorpayOrderId("mock_order_" + order.getId());
@@ -51,6 +57,11 @@ public class RazorpayServiceImpl implements RazorpayService {
 
             com.razorpay.Order razorpayOrder = razorpayClient.orders.create(orderRequest);
 
+            if (existing != null) {
+                existing.setAmount(order.getTotalAmount());
+                existing.setRazorpayOrderId(razorpayOrder.get("id"));
+                return paymentRepository.save(existing);
+            }
             Payment payment = new Payment();
             payment.setOrder(order);
             payment.setRazorpayOrderId(razorpayOrder.get("id"));
@@ -59,6 +70,10 @@ public class RazorpayServiceImpl implements RazorpayService {
             
             return paymentRepository.save(payment);
         } catch (Exception e) {
+            if (existing != null) {
+                existing.setAmount(order.getTotalAmount());
+                return paymentRepository.save(existing);
+            }
             Payment payment = new Payment();
             payment.setOrder(order);
             payment.setRazorpayOrderId("mock_order_" + order.getId());

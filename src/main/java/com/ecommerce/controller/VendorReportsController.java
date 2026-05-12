@@ -118,9 +118,13 @@ public class VendorReportsController {
                 }
             }
 
-            // Fallback cost: 60% of the catalog selling price
-            if (!costFound && unitPrice != null) {
-                unitCost = unitPrice.multiply(new BigDecimal("0.60")).setScale(2, RoundingMode.HALF_UP);
+            // Fallback: use variant's unitPrice if set, else 60% of selling price
+            if (!costFound) {
+                if (item.getVariant() != null && item.getVariant().getUnitPrice() != null && item.getVariant().getUnitPrice().compareTo(BigDecimal.ZERO) > 0) {
+                    unitCost = item.getVariant().getUnitPrice();
+                } else if (unitPrice != null) {
+                    unitCost = unitPrice.multiply(new BigDecimal("0.60")).setScale(2, RoundingMode.HALF_UP);
+                }
             }
 
             BigDecimal revenue = unitPrice.multiply(new BigDecimal(item.getQuantity()));
@@ -242,8 +246,12 @@ public class VendorReportsController {
                     }
                 }
 
-                if (!costFound && unitPrice != null) {
-                    unitCost = unitPrice.multiply(new BigDecimal("0.60")).setScale(2, RoundingMode.HALF_UP);
+                if (!costFound) {
+                    if (item.getVariant() != null && item.getVariant().getUnitPrice() != null && item.getVariant().getUnitPrice().compareTo(BigDecimal.ZERO) > 0) {
+                        unitCost = item.getVariant().getUnitPrice();
+                    } else if (unitPrice != null) {
+                        unitCost = unitPrice.multiply(new BigDecimal("0.60")).setScale(2, RoundingMode.HALF_UP);
+                    }
                 }
 
                 BigDecimal revenue = unitPrice.multiply(new BigDecimal(item.getQuantity()));

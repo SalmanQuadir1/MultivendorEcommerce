@@ -349,6 +349,12 @@
                     <i class="bi bi-chevron-right chevron-indicator"></i>
                 </a>
             </li>
+            <li sec:authorize="hasAnyRole('SUPER_ADMIN','ADMIN','MARKETING_ADMIN')">
+                <a href="/admin/coupons" class="sidebar-link" th:classappend="${activeLink == 'coupons' ? 'active' : ''}">
+                    <div class="link-content"><i class="bi bi-ticket-perforated"></i> Coupons</div>
+                    <i class="bi bi-chevron-right chevron-indicator"></i>
+                </a>
+            </li>
         </ul>
 
         <!-- Profile/Branding Settings Control -->

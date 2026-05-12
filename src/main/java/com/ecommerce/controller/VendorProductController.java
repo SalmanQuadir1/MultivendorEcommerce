@@ -49,6 +49,7 @@ public class VendorProductController {
             @RequestParam("imageFile") MultipartFile imageFile,
             @RequestParam("variantSizes") java.util.List<String> sizes,
             @RequestParam("variantStocks") java.util.List<Integer> stocks,
+            @RequestParam("variantUnitPrices") java.util.List<java.math.BigDecimal> unitPrices,
             @RequestParam("variantPrices") java.util.List<java.math.BigDecimal> prices,
             @AuthenticationPrincipal CustomUserDetails userDetails) throws IOException {
 
@@ -61,6 +62,11 @@ public class VendorProductController {
         }
 
         product.setVendor(userService.findByEmail(userDetails.getUsername()));
+
+        // Ensure product price is set from first variant when readonly
+        if (!sizes.isEmpty() && !prices.isEmpty() && prices.get(0) != null) {
+            product.setPrice(prices.get(0));
+        }
 
         // Save base product first so it gets an ID (if new)
         Product savedProduct = productService.save(product);
@@ -75,8 +81,9 @@ public class VendorProductController {
                 v.setSize(sizes.get(i));
                 v.setStock(stocks.get(i) != null ? stocks.get(i) : 0);
                 java.math.BigDecimal vPrice = prices.get(i) != null ? prices.get(i) : savedProduct.getPrice();
+                java.math.BigDecimal vUnitPrice = unitPrices.get(i) != null ? unitPrices.get(i) : java.math.BigDecimal.ZERO;
                 v.setPrice(vPrice);
-                v.setUnitPrice(vPrice.multiply(new java.math.BigDecimal("0.70")));
+                v.setUnitPrice(vUnitPrice);
                 v.setSku(savedProduct.getName().substring(0, Math.min(3, savedProduct.getName().length())).toUpperCase()
                         + "-" + sizes.get(i).toUpperCase());
                 savedProduct.getVariants().add(v);

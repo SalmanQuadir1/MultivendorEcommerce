@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Sale Invoice #<span th:text="${invNo}">INV-001</span></title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#f3f4f6;padding:40px;color:#1f2937}
+.invoice{max-width:800px;margin:0 auto;background:#fff;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,.06);overflow:hidden}
+.invoice-header{background:#1a3c34;color:#fff;padding:40px;display:flex;justify-content:space-between;align-items:flex-start}
+.invoice-header h1{font-size:1.8rem;font-weight:800;letter-spacing:-.5px;margin:0}
+.invoice-header h1 span{color:#c9a96e}
+.invoice-header .inv-meta{text-align:right}
+.invoice-header .inv-meta .label{font-size:.75rem;opacity:.6;text-transform:uppercase;letter-spacing:1px}
+.invoice-header .inv-meta .value{font-size:1.1rem;font-weight:700}
+.invoice-body{padding:40px}
+.row-2{display:flex;gap:40px;margin-bottom:32px}
+.col-2{flex:1}
+.col-2 h6{font-size:.75rem;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;font-weight:700;margin-bottom:8px}
+.col-2 p{font-size:.9rem;line-height:1.6;margin:0}
+table{width:100%;border-collapse:collapse;margin-bottom:24px}
+table th{text-align:left;font-size:.75rem;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;font-weight:700;padding:12px 0;border-bottom:2px solid #e5e7eb}
+table td{padding:14px 0;border-bottom:1px solid #f3f4f6;font-size:.9rem}
+table td:last-child,table th:last-child{text-align:right}
+table td:nth-child(2),table th:nth-child(2){text-align:center}
+table tfoot td{border-bottom:none;padding:8px 0;font-size:.9rem}
+table tfoot td:last-child{font-weight:600}
+table tfoot .grand td{font-size:1.1rem;font-weight:800;color:#1a3c34;padding-top:16px;border-top:2px solid #1a3c34}
+.invoice-footer{padding:0 40px 40px;display:flex;justify-content:space-between;align-items:center;color:#9ca3af;font-size:.8rem}
+.invoice-footer .badge{background:#1a3c34;color:#c9a96e;padding:4px 12px;border-radius:4px;font-size:.7rem;letter-spacing:1px;font-weight:700}
+.print-btn{display:block;width:fit-content;margin:20px auto 0;padding:12px 32px;background:#1a3c34;color:#fff;border:none;border-radius:8px;font-weight:600;font-size:.9rem;cursor:pointer;transition:all .3s}
+.print-btn:hover{background:#2d5a4e}
+@media print{body{background:#fff;padding:0}.print-btn{display:none}.invoice{box-shadow:none;border-radius:0}}
+</style>
+</head>
+<body>
+<button class="print-btn" onclick="window.print()"><i class="bi bi-printer"></i> Print / Save PDF</button>
+<div class="invoice">
+<div class="invoice-header">
+<div><h1>Organic<span>World</span></h1><p style="opacity:.7;font-size:.85rem;margin-top:4px">Premium Organic Products</p></div>
+<div class="inv-meta"><div class="label">Invoice #</div><div class="value" th:text="${invNo}">INV-001</div><div class="label" style="margin-top:8px">Date</div><div class="value" style="font-size:.95rem" th:text="${date}">01 Jan 2026</div></div>
+</div>
+<div class="invoice-body">
+<div class="row-2">
+<div class="col-2"><h6>Bill To</h6><p><strong th:text="${order.user.fullName}">Customer Name</strong><br><span th:text="${order.user.email}">email@example.com</span></p></div>
+<div class="col-2"><h6>Order Details</h6><p><strong>Order #</strong> <span th:text="${order.id}">001</span><br><strong>Status</strong> <span th:text="${order.status}">PAID</span><br><strong>Payment</strong> <span th:if="${order.status == 'PAID'}">Paid</span><span th:unless="${order.status == 'PAID'}">Pending</span></p></div>
+</div>
+<table>
+<thead><tr><th>Item</th><th style="text-align:center">Qty</th><th style="text-align:right">Price</th><th style="text-align:right">Total</th></tr></thead>
+<tbody>
+<tr th:each="item : ${order.items}">
+<td><strong th:text="${item.product.name}">Product</strong><br><small style="color:#9ca3af" th:if="${item.variant != null}" th:text="'Size: ' + ${item.variant.size}">Size</small></td>
+<td style="text-align:center" th:text="${item.quantity}">1</td>
+<td style="text-align:right">₹<span th:text="${#numbers.formatDecimal(item.price, 1, 'COMMA', 2, 'POINT')}">0.00</span></td>
+<td style="text-align:right">₹<span th:text="${#numbers.formatDecimal(item.price * item.quantity, 1, 'COMMA', 2, 'POINT')}">0.00</span></td>
+</tr>
+</tbody>
+<tfoot>
+<tr><td colspan="3" style="text-align:right">Subtotal</td><td style="text-align:right">₹<span th:text="${#numbers.formatDecimal(subtotal, 1, 'COMMA', 2, 'POINT')}">0.00</span></td></tr>
+<tr th:if="${order.discountAmount != null and order.discountAmount > 0}"><td colspan="3" style="text-align:right;color:#059669">Discount (<span th:text="${order.couponCode}">CODE</span>)</td><td style="text-align:right;color:#059669">−₹<span th:text="${#numbers.formatDecimal(order.discountAmount, 1, 'COMMA', 2, 'POINT')}">0.00</span></td></tr>
+<tr><td colspan="3" style="text-align:right">Delivery</td><td style="text-align:right;color:#059669">FREE</td></tr>
+<tr class="grand"><td colspan="3" style="text-align:right;font-weight:800">Total Paid</td><td style="text-align:right;font-weight:800">₹<span th:text="${#numbers.formatDecimal(order.totalAmount, 1, 'COMMA', 2, 'POINT')}">0.00</span></td></tr>
+</tfoot>
+</table>
+</div>
+<div class="invoice-footer">
+<span>© 2026 OrganicWorld. Thank you for your purchase!</span>
+<span class="badge">PAID</span>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

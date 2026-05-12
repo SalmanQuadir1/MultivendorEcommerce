@@ -84,7 +84,7 @@
                         </div>
                     </div>
                     <div class="col-md-3 text-end">
-                        <button class="btn border w-100 rounded-pill shadow-sm bg-white mb-2 py-1">Track package</button>
+                        <a th:href="@{/invoice/sale/{id}(id=${order.id})}" target="_blank" class="btn border w-100 rounded-pill shadow-sm bg-white mb-2 py-1"><i class="bi bi-file-earmark-text me-1"></i> Download Invoice</a>
                         <button class="btn border w-100 rounded-pill shadow-sm bg-white mb-2 py-1">Write a product review</button>
                     </div>
                 </div>

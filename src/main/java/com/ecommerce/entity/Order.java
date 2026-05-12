@@ -24,6 +24,10 @@ public class Order {
 
     private BigDecimal totalAmount;
 
+    private String couponCode;
+
+    private BigDecimal discountAmount;
+
     @Enumerated(EnumType.STRING)
     private OrderStatus status = OrderStatus.PENDING;
 

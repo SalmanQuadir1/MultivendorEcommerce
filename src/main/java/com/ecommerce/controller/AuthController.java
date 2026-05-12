@@ -21,6 +21,7 @@ public class AuthController {
     private final com.ecommerce.repository.CarouselItemRepository carouselItemRepository;
     private final com.ecommerce.repository.WishlistItemRepository wishlistItemRepository;
     private final com.ecommerce.repository.CategoryRepository categoryRepository;
+    private final com.ecommerce.repository.CouponRepository couponRepository;
 
     @GetMapping("/login")
     public String login() {
@@ -110,6 +111,10 @@ public class AuthController {
             slides = carouselItemRepository.findByActiveTrue();
         }
         model.addAttribute("carouselItems", slides);
+
+        // Active coupons
+        model.addAttribute("activeCoupons", couponRepository.findActiveValidCoupons(java.time.LocalDate.now()));
+
         return "index";
     }
 

@@ -8,6 +8,7 @@
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
+        :root { --deep-forest: #1a3c34; }
         .checkout-header {
             background-color: #2874f0;
             color: #fff;
@@ -134,13 +135,33 @@
                     </div>
 
                     <h5 class="fw-bold mb-3">Price Details</h5>
-                    <div class="d-flex justify-content-between small mb-2 text-muted">
-                        <span>Price (<span th:text="${#lists.size(order.items)}">0</span> items):</span>
-                        <span>₹<span th:text="${order.totalAmount}">0.00</span></span>
+                    <div th:each="item : ${order.items}" class="d-flex justify-content-between small mb-1 text-muted">
+                        <span class="text-truncate" style="max-width:200px" th:text="${item.product.name}">Item</span>
+                        <span>₹<span th:text="${item.price * item.quantity}">0</span></span>
                     </div>
-                    <div class="d-flex justify-content-between small mb-2 text-muted">
-                        <span>Delivery Charges:</span>
+                    <hr class="my-2">
+                    <div class="d-flex justify-content-between small mb-1 fw-semibold text-dark">
+                        <span>Subtotal (<span th:text="${#lists.size(order.items)}">0</span> items):</span>
+                        <span>₹<span th:text="${order.totalAmount + (order.discountAmount != null ? order.discountAmount : 0)}">0.00</span></span>
+                    </div>
+                    <div th:if="${order.discountAmount != null and order.discountAmount > 0}" class="d-flex justify-content-between small mb-1" style="color:#059669">
+                        <span>Coupon (<span th:text="${order.couponCode}">CODE</span>):</span>
+                        <span>−₹<span th:text="${order.discountAmount}">0.00</span></span>
+                    </div>
+                    <div class="d-flex justify-content-between small mb-1 text-muted">
+                        <span>Delivery:</span>
                         <span class="text-success fw-bold">FREE</span>
+                    </div>
+                    <div class="border rounded p-2 mb-2 bg-light">
+                        <form th:action="@{/checkout/apply-coupon}" method="post" class="d-flex gap-2">
+                            <input type="text" name="couponCode" class="form-control form-control-sm" placeholder="Enter coupon code" th:value="${order.couponCode != null ? order.couponCode : ''}">
+                            <button type="submit" class="btn btn-sm fw-bold" style="background:var(--deep-forest);color:#fff;white-space:nowrap">Apply</button>
+                        </form>
+                        <div th:if="${couponSuccess}" class="text-success small mt-1 fw-bold" th:text="${couponSuccess}">Success</div>
+                        <div th:if="${couponError}" class="text-danger small mt-1" th:text="${couponError}">Error</div>
+                        <form th:if="${order.couponCode != null}" th:action="@{/checkout/remove-coupon}" method="post" class="mt-1">
+                            <button type="submit" class="btn btn-sm btn-link text-danger p-0" style="font-size:11px">✕ Remove coupon</button>
+                        </form>
                     </div>
                     <hr>
                     <div class="d-flex justify-content-between fw-bold fs-5 mb-0 text-dark">

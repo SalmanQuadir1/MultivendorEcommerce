@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +31,8 @@ public class Product {
     @Column(nullable = false)
     private BigDecimal price;
 
+    private BigDecimal salePrice;
+
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductVariant> variants = new ArrayList<>();
 
@@ -42,4 +45,19 @@ public class Product {
     @ManyToOne
     @JoinColumn(name = "vendor_id")
     private User vendor;
+
+    @Transient
+    public BigDecimal getDiscountPercentage() {
+        if (salePrice != null && price != null && price.compareTo(BigDecimal.ZERO) > 0) {
+            return price.subtract(salePrice)
+                .multiply(BigDecimal.valueOf(100))
+                .divide(price, 0, RoundingMode.HALF_UP);
+        }
+        return BigDecimal.ZERO;
+    }
+
+    @Transient
+    public boolean isOnSale() {
+        return salePrice != null && price != null && salePrice.compareTo(price) < 0;
+    }
 }

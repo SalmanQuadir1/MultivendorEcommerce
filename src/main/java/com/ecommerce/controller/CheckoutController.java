@@ -1,17 +1,23 @@
 package com.ecommerce.controller;
 
+import com.ecommerce.entity.Coupon;
 import com.ecommerce.entity.Order;
 import com.ecommerce.entity.Payment;
+import com.ecommerce.repository.CouponRepository;
 import com.ecommerce.security.CustomUserDetails;
 import com.ecommerce.service.OrderService;
 import com.ecommerce.service.RazorpayService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.math.BigDecimal;
 
 @Controller
 @RequestMapping("/checkout")
@@ -23,28 +29,127 @@ public class CheckoutController {
     private final com.ecommerce.repository.AddressRepository addressRepository;
     private final com.ecommerce.repository.UserRepository userRepository;
     private final com.ecommerce.repository.PaymentRepository paymentRepository;
+    private final CouponRepository couponRepository;
 
     @Value("${razorpay.key.id}")
     private String keyId;
 
-    @PostMapping
-    public String processCheckout(@AuthenticationPrincipal CustomUserDetails userDetails, Model model, RedirectAttributes redirectAttributes) {
+    @GetMapping
+    public String showCheckout(@AuthenticationPrincipal CustomUserDetails userDetails, Model model, RedirectAttributes redirectAttributes, HttpSession session) {
         try {
+            Long orderId = (Long) session.getAttribute("currentOrderId");
+            if (orderId == null) {
+                return "redirect:/cart";
+            }
+            Order order = orderService.findById(orderId);
+            if (order == null) {
+                return "redirect:/cart";
+            }
+            return renderCheckout(order, userDetails, model);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error loading checkout: " + e.getMessage());
+            return "redirect:/cart";
+        }
+    }
+
+    @PostMapping
+    public String processCheckout(@AuthenticationPrincipal CustomUserDetails userDetails, Model model, RedirectAttributes redirectAttributes, HttpSession session) {
+        try {
+            session.removeAttribute("appliedCouponCode");
+            session.removeAttribute("discountAmount");
             Order order = orderService.createOrderFromCart(userDetails.getId());
-            Payment payment = razorpayService.createRazorpayOrder(order);
-            java.util.List<com.ecommerce.entity.Address> addresses = addressRepository.findByUserId(userDetails.getId());
-            
-            model.addAttribute("order", order);
-            model.addAttribute("payment", payment);
-            model.addAttribute("razorpayKeyId", keyId);
-            model.addAttribute("userFullName", userDetails.getFullName());
-            model.addAttribute("userEmail", userDetails.getUsername());
-            model.addAttribute("addresses", addresses);
-            return "customer/checkout";
+            session.setAttribute("currentOrderId", order.getId());
+            return renderCheckout(order, userDetails, model);
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Error processing checkout: " + e.getMessage());
             return "redirect:/cart";
         }
+    }
+
+    private String renderCheckout(Order order, CustomUserDetails userDetails, Model model) throws Exception {
+        Payment payment = razorpayService.createRazorpayOrder(order);
+        java.util.List<com.ecommerce.entity.Address> addresses = addressRepository.findByUserId(userDetails.getId());
+        model.addAttribute("order", order);
+        model.addAttribute("payment", payment);
+        model.addAttribute("razorpayKeyId", keyId);
+        model.addAttribute("userFullName", userDetails.getFullName());
+        model.addAttribute("userEmail", userDetails.getUsername());
+        model.addAttribute("addresses", addresses);
+        return "customer/checkout";
+    }
+
+    private BigDecimal calculateApplicableDiscount(Coupon coupon, Order order) {
+        java.util.List<Long> applicableIds = coupon.getApplicableProducts().stream()
+            .map(com.ecommerce.entity.Product::getId).collect(java.util.stream.Collectors.toList());
+        BigDecimal applicableTotal = BigDecimal.ZERO;
+        for (com.ecommerce.entity.OrderItem item : order.getItems()) {
+            if (applicableIds.isEmpty() || applicableIds.contains(item.getProduct().getId())) {
+                applicableTotal = applicableTotal.add(item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
+            }
+        }
+        return coupon.calculateDiscount(applicableTotal);
+    }
+
+    @PostMapping("/apply-coupon")
+    public String applyCoupon(@RequestParam("couponCode") String couponCode,
+                              @AuthenticationPrincipal CustomUserDetails userDetails,
+                              HttpSession session,
+                              RedirectAttributes redirectAttributes) {
+        try {
+            Coupon coupon = couponRepository.findByCode(couponCode.toUpperCase()).orElse(null);
+            if (coupon == null) {
+                redirectAttributes.addFlashAttribute("couponError", "Invalid coupon code.");
+                return "redirect:/checkout";
+            }
+            if (!coupon.isValid()) {
+                redirectAttributes.addFlashAttribute("couponError", "Coupon has expired or reached its usage limit.");
+                return "redirect:/checkout";
+            }
+            Long orderId = (Long) session.getAttribute("currentOrderId");
+            if (orderId == null) {
+                redirectAttributes.addFlashAttribute("couponError", "No active order found.");
+                return "redirect:/cart";
+            }
+            Order order = orderService.findById(orderId);
+            if (order == null) {
+                redirectAttributes.addFlashAttribute("couponError", "No active order found.");
+                return "redirect:/cart";
+            }
+            if (order.getCouponCode() != null) {
+                redirectAttributes.addFlashAttribute("couponError", "Coupon already applied. Remove it first.");
+                return "redirect:/checkout";
+            }
+            BigDecimal discount = calculateApplicableDiscount(coupon, order);
+            if (discount.compareTo(BigDecimal.ZERO) <= 0) {
+                redirectAttributes.addFlashAttribute("couponError", "Coupon not applicable. Check minimum order requirements.");
+                return "redirect:/checkout";
+            }
+            orderService.applyCouponDiscount(order.getId(), coupon, discount);
+            session.setAttribute("appliedCouponCode", coupon.getCode());
+            session.setAttribute("discountAmount", discount);
+            redirectAttributes.addFlashAttribute("couponSuccess", "Coupon " + coupon.getCode() + " applied! You saved ₹" + discount);
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("couponError", "Error: " + e.getMessage());
+        }
+        return "redirect:/checkout";
+    }
+
+    @PostMapping("/remove-coupon")
+    public String removeCoupon(HttpSession session, RedirectAttributes redirectAttributes) {
+        Long orderId = (Long) session.getAttribute("currentOrderId");
+        if (orderId != null) {
+            Order order = orderService.findByIdSimple(orderId);
+            if (order != null && order.getDiscountAmount() != null) {
+                order.setTotalAmount(order.getTotalAmount().add(order.getDiscountAmount()));
+                order.setCouponCode(null);
+                order.setDiscountAmount(null);
+                orderService.save(order);
+            }
+        }
+        session.removeAttribute("appliedCouponCode");
+        session.removeAttribute("discountAmount");
+        return "redirect:/checkout";
     }
 
     @PostMapping("/address/add")
@@ -134,19 +239,33 @@ public class CheckoutController {
             @RequestParam(value = "razorpayOrderId", required = false) String razorpayOrderId,
             @RequestParam(value = "razorpayPaymentId", required = false) String razorpayPaymentId,
             @RequestParam(value = "razorpaySignature", required = false) String razorpaySignature,
-            RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirectAttributes,
+            HttpSession session) {
         try {
             if (razorpayOrderId != null && razorpayPaymentId != null) {
                 boolean verified = razorpayService.verifyPaymentSignature(razorpayOrderId, razorpayPaymentId, razorpaySignature);
                 if (verified) {
+                    orderService.clearCartAfterPayment(orderId);
                     redirectAttributes.addFlashAttribute("success", "Payment successful! Order placed successfully.");
                 } else {
                     redirectAttributes.addFlashAttribute("error", "Payment verification failed. Please try again.");
                 }
             } else {
                 orderService.updateOrderStatus(orderId, "PAID");
+                orderService.clearCartAfterPayment(orderId);
                 redirectAttributes.addFlashAttribute("success", "Order placed successfully! Thank you for shopping with us.");
             }
+            Order confirmedOrder = orderService.findByIdSimple(orderId);
+            if (confirmedOrder != null && confirmedOrder.getCouponCode() != null) {
+                Coupon usedCoupon = couponRepository.findByCode(confirmedOrder.getCouponCode()).orElse(null);
+                if (usedCoupon != null) {
+                    usedCoupon.setUsedCount(usedCoupon.getUsedCount() != null ? usedCoupon.getUsedCount() + 1 : 1);
+                    couponRepository.save(usedCoupon);
+                }
+            }
+            session.removeAttribute("currentOrderId");
+            session.removeAttribute("appliedCouponCode");
+            session.removeAttribute("discountAmount");
             return "redirect:/customer/orders";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Error placing order: " + e.getMessage());

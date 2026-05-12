@@ -1,216 +1,94 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-
 <head>
-    <meta charset="UTF-8">
-    <title th:text="${product.id == null ? 'Add Product' : 'Edit Product'}">Product Form</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+<meta charset="UTF-8">
+<title th:text="${product.id == null ? 'Add Product' : 'Edit Product'}">Product Form</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<style>
+:root{--primary:#15803d;--primary-light:rgba(21,128,61,.08);--success:#166534;--dark:#14532d;--border:#e2e8f0}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#f8fafc;color:#334155;margin:0}
+.dashboard-container{display:flex;min-height:100vh}
+.sidebar{width:280px;background:var(--dark);color:#fff;padding:24px;display:flex;flex-direction:column;position:fixed;height:100vh;z-index:100;border-right:1px solid rgba(255,255,255,.05)}
+.sidebar-brand{font-size:22px;font-weight:800;letter-spacing:-.5px;color:#fff;text-decoration:none;display:flex;align-items:center;gap:10px;margin-bottom:40px}
+.sidebar-brand span{color:#ffe500}
+.nav-section-title{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:#64748b;font-weight:700;margin-bottom:15px;padding-left:12px}
+.sidebar-nav{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}
+.sidebar-link{display:flex;align-items:center;gap:14px;padding:12px 16px;color:#94a3b8;text-decoration:none;font-weight:600;font-size:14px;border-radius:8px;transition:all .25s}
+.sidebar-link:hover,.sidebar-link.active{color:#fff;background:rgba(255,255,255,.08)}
+.main-content{margin-left:280px;flex:1;padding:40px;background:#f8fafc;min-height:100vh}
+.top-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px}
+.glass-card{background:#fff;border-radius:16px;border:1px solid var(--border);box-shadow:0 4px 20px rgba(0,0,0,.02);padding:32px;max-width:900px}
+label{font-size:.82rem;font-weight:700;color:#475569;margin-bottom:4px;display:block}
+.form-control,.form-select{border-radius:8px;border:1px solid var(--border);padding:10px 14px;font-size:.9rem}
+.form-control:focus,.form-select:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}
+.btn-primary-custom{background:var(--primary);color:#fff;border:none;padding:10px 32px;border-radius:8px;font-weight:700;font-size:.9rem;cursor:pointer;transition:all .3s}
+.btn-primary-custom:hover{background:var(--success);transform:translateY(-1px)}
+</style>
 </head>
-
 <body>
-    <div th:replace="~{fragments/header :: header}"></div>
-
-    <div class="container mt-5 mb-5" style="max-width: 800px;">
-        <h2 class="mb-4" th:text="${product.id == null ? 'Add New Product' : 'Edit Product'}">Product Form</h2>
-
-        <div class="card shadow-sm border-0">
-            <div class="card-body p-4">
-                <form th:action="@{/vendor/products/save}" th:object="${product}" method="post"
-                    enctype="multipart/form-data">
-                    <input type="hidden" th:field="*{id}">
-                    <input type="hidden" th:field="*{imageUrl}">
-
-                    <div class="row">
-                        <div class="col-md-8">
-                            <div class="mb-3">
-                                <label for="name" class="form-label fw-bold">Product Name</label>
-                                <input type="text" class="form-control" id="name" th:field="*{name}" required>
-                                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('name')}"
-                                    th:errors="*{name}"></div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="description" class="form-label fw-bold">Description</label>
-                                <textarea class="form-control" id="description" rows="4" th:field="*{description}"
-                                    required></textarea>
-                                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('description')}"
-                                    th:errors="*{description}"></div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="price" class="form-label fw-bold">Price (₹)</label>
-                                    <input type="number" step="0.01" class="form-control" id="price" th:field="*{price}"
-                                        required>
-                                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('price')}"
-                                        th:errors="*{price}"></div>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="category" class="form-label fw-bold">Category</label>
-                                    <select class="form-select" id="category" name="category.id" required>
-                                        <option value="">Select a Category</option>
-                                        <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"
-                                            th:selected="${product.category != null and product.category.id == cat.id}">
-                                        </option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- Product Variants Section -->
-                            <div class="mb-4">
-                                <label class="form-label fw-bold">Product Sizes & Inventory (SKUs)</label>
-                                <div id="variants-container">
-                                    <!-- Existing variants (if editing) -->
-                                    <div th:each="variant : ${product.variants}"
-                                        class="row g-2 mb-2 variant-row align-items-center">
-                                        <div class="col-md-4">
-                                            <input type="text" name="variantSizes" th:value="${variant.size}"
-                                                class="form-control" placeholder="Size (e.g. S, M)" required>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <input type="number" name="variantStocks" th:value="${variant.stock}"
-                                                class="form-control" placeholder="Stock" required>
-                                        </div>
-                                        <div class="col-md-2">
-                                            <input type="number" step="0.01" name="variantPrices"
-                                                th:value="${variant.price}" class="form-control" placeholder="Price (₹)"
-                                                required>
-                                        </div>
-                                        <div class="col-md-2">
-                                            <button type="button"
-                                                class="btn btn-outline-danger remove-variant-btn w-100"><i
-                                                    class="bi bi-trash">Delete</i></button>
-                                        </div>
-                                    </div>
-                                    <!-- If new product, add at least one row -->
-                                    <div th:if="${#lists.isEmpty(product.variants)}"
-                                        class="row g-2 mb-2 variant-row align-items-center">
-                                        <div class="col-md-4">
-                                            <input type="text" name="variantSizes" class="form-control"
-                                                placeholder="Size (e.g. S, M)" required>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <input type="number" name="variantStocks" class="form-control"
-                                                placeholder="Stock" required>
-                                        </div>
-                                        <div class="col-md-2">
-                                            <input type="number" step="0.01" name="variantPrices" class="form-control"
-                                                placeholder="Price (₹)" required>
-                                        </div>
-                                        <div class="col-md-2">
-                                            <button type="button"
-                                                class="btn btn-outline-danger remove-variant-btn w-100"><i
-                                                    class="bi bi-trash">Delete</i></button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <button type="button" id="add-variant-btn"
-                                    class="btn btn-sm btn-outline-secondary mt-2">+ Add Size Variant</button>
-                            </div>
-                        </div>
-
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="imageFile" class="form-label fw-bold">Product Image</label>
-                                <div class="mb-2 text-center">
-                                    <img id="image-preview" th:src="@{${product.imageUrl != null ? product.imageUrl : ''}}"
-                                        class="img-thumbnail"
-                                        style="max-height: 250px; width: 100%; object-fit: cover;">
-                                    <p id="image-status-label" class="small text-muted mt-1"
-                                        th:text="${product.imageUrl != null ? 'Current Image' : 'Apparel Placeholder Image'}">
-                                    </p>
-                                </div>
-                                <input class="form-control" type="file" id="imageFile" name="imageFile"
-                                    accept="image/*">
-                                <p class="small text-muted mt-1">Select an image file to upload.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <hr class="mt-2 mb-4">
-
-                    <div class="d-flex justify-content-end gap-2">
-                        <a th:href="@{/vendor/products}" class="btn btn-outline-secondary">Cancel</a>
-                        <button type="submit" class="btn amz-btn-primary px-4">Save Product</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <div th:replace="~{fragments/footer :: footer}"></div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const container = document.getElementById('variants-container');
-            const addBtn = document.getElementById('add-variant-btn');
-            const basePriceInput = document.getElementById('price');
-
-            // Automatically pre-populate SKU prices when base product price is typed
-            basePriceInput.addEventListener('input', function () {
-                const basePrice = this.value;
-                const variantPriceInputs = container.querySelectorAll('input[name="variantPrices"]');
-                variantPriceInputs.forEach(input => {
-                    if (!input.value || input.value === '0' || input.value === '') {
-                        input.value = basePrice;
-                    }
-                });
-            });
-
-            addBtn.addEventListener('click', function () {
-                const currentBasePrice = basePriceInput.value || '';
-                const newRow = document.createElement('div');
-                newRow.className = 'row g-2 mb-2 variant-row align-items-center';
-                newRow.innerHTML = `
-                <div class="col-md-4">
-                    <input type="text" name="variantSizes" class="form-control" placeholder="Size (e.g. S, M)" required>
-                </div>
-                <div class="col-md-4">
-                    <input type="number" name="variantStocks" class="form-control" placeholder="Stock" required>
-                </div>
-                <div class="col-md-2">
-                    <input type="number" step="0.01" name="variantPrices" value="${currentBasePrice}" class="form-control" placeholder="Price (₹)" required>
-                </div>
-                <div class="col-md-2">
-                    <button type="button" class="btn btn-outline-danger remove-variant-btn w-100"><i class="bi bi-trash">Delete</i></button>
-                </div>
-            `;
-                container.appendChild(newRow);
-            });
-
-            container.addEventListener('click', function (e) {
-                if (e.target.classList.contains('remove-variant-btn') || e.target.closest('.remove-variant-btn')) {
-                    const row = e.target.closest('.variant-row');
-                    if (container.querySelectorAll('.variant-row').length > 1) {
-                        row.remove();
-                    } else {
-                        alert("A product must have at least one size variant!");
-                    }
-                }
-            });
-
-            // Live Product Photo Upload Preview
-            const fileInput = document.getElementById('imageFile');
-            const imagePreview = document.getElementById('image-preview');
-            const statusLabel = document.getElementById('image-status-label');
-
-            if (fileInput && imagePreview) {
-                fileInput.addEventListener('change', function () {
-                    const file = this.files[0];
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = function (e) {
-                            imagePreview.src = e.target.result;
-                            if (statusLabel) {
-                                statusLabel.textContent = "Selected Photo Preview";
-                            }
-                        };
-                        reader.readAsDataURL(file);
-                    }
-                });
-            }
-        });
-    </script>
+<div class="dashboard-container">
+<div th:replace="~{fragments/vendor_sidebar :: sidebar('products')}"></div>
+<main class="main-content">
+<header class="top-header">
+<div><h1 style="font-weight:800;font-size:1.4rem;letter-spacing:-.3px;margin:0;color:#0f172a" th:text="${product.id == null ? 'Add Product' : 'Edit Product'}">Add Product</h1><p class="text-muted small m-0" th:text="${product.id == null ? 'Create a new product with variants and pricing.' : 'Update product details, variants and pricing.'}">Fill in details</p></div>
+<a th:href="@{/vendor/products}" class="btn btn-outline-secondary" style="font-size:.85rem;padding:8px 20px;border-radius:8px;font-weight:600"><i class="bi bi-arrow-left me-1"></i> Back</a>
+</header>
+<div class="glass-card">
+<form th:action="@{/vendor/products/save}" th:object="${product}" method="post" enctype="multipart/form-data">
+<input type="hidden" th:field="*{id}">
+<input type="hidden" th:field="*{imageUrl}">
+<div class="row g-4">
+<div class="col-md-8">
+<div class="mb-3"><label>Product Name</label><input type="text" class="form-control" th:field="*{name}" placeholder="Enter product name" required></div>
+<div class="mb-3"><label>Description</label><textarea class="form-control" rows="4" th:field="*{description}" placeholder="Describe your product..." required></textarea></div>
+<div class="row g-3">
+<div class="col-md-6"><label>Price (₹)</label><input type="number" step="0.01" class="form-control" id="price" th:field="*{price}" readonly style="background:#f1f5f9;cursor:not-allowed"><small class="text-muted"><i class="bi bi-info-circle"></i> Auto-filled from first SKU price</small></div>
+<div class="col-md-6"><label>Category</label><select class="form-select" name="category.id" required><option value="">Select category</option><option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}" th:selected="${product.category != null and product.category.id == cat.id}"></option></select></div>
+</div>
+</div>
+<div class="col-md-4">
+<div class="mb-3"><label>Preview</label><div class="border rounded-3 p-3 text-center bg-light"><img id="image-preview" th:src="@{${product.imageUrl != null ? product.imageUrl : ''}}" style="max-height:200px;width:100%;object-fit:cover;border-radius:8px" class="img-fluid"><p id="image-status-label" class="small text-muted mt-2 mb-0" th:text="${product.imageUrl != null ? 'Current image' : 'No image selected'}">No image</p></div></div>
+<div><label for="imageFile" class="btn btn-outline-primary w-100 px-4" style="border-radius:8px;font-weight:600;cursor:pointer"><i class="bi bi-cloud-upload me-2"></i>Choose Image</label><input type="file" id="imageFile" name="imageFile" accept="image/*" style="display:none"></div>
+</div>
+</div>
+<hr class="my-4">
+<div class="d-flex align-items-center justify-content-between mb-3">
+<h5 style="font-weight:700;margin:0;font-size:1rem">SKU Variants</h5>
+<button type="button" id="add-variant-btn" class="btn btn-sm btn-outline-success rounded-pill px-3"><i class="bi bi-plus-lg me-1"></i>Add Row</button>
+</div>
+<div class="table-responsive">
+<table class="table table-borderless align-middle mb-0" style="min-width:620px">
+<thead><tr style="border-bottom:2px solid #e5e7eb"><th style="width:26%;padding:8px 8px 8px 0;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#94a3b8">Size</th><th style="width:16%;padding:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#94a3b8">Stock</th><th style="width:24%;padding:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#94a3b8">Unit Cost</th><th style="width:24%;padding:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#94a3b8">Sell Price</th><th style="width:10%;padding:8px 0 8px 8px"></th></tr></thead>
+<tbody id="variants-container">
+<tr th:each="variant : ${product.variants}" class="variant-row"><td style="padding:6px 8px 6px 0"><input type="text" name="variantSizes" th:value="${variant.size}" class="form-control form-control-sm" placeholder="e.g. 500g" required></td><td style="padding:6px 8px"><input type="number" name="variantStocks" th:value="${variant.stock}" class="form-control form-control-sm" placeholder="Qty" required></td><td style="padding:6px 8px"><input type="number" step="0.01" name="variantUnitPrices" th:value="${variant.unitPrice}" class="form-control form-control-sm" placeholder="0.00" required></td><td style="padding:6px 8px"><input type="number" step="0.01" name="variantPrices" th:value="${variant.price}" class="form-control form-control-sm" placeholder="0.00" required></td><td style="padding:6px 0 6px 8px;text-align:center"><button type="button" class="btn btn-outline-danger btn-sm remove-variant-btn w-100"><i class="bi bi-trash me-1"></i>Delete</button></td></tr>
+<tr th:if="${#lists.isEmpty(product.variants)}" class="variant-row"><td style="padding:6px 8px 6px 0"><input type="text" name="variantSizes" class="form-control form-control-sm" placeholder="e.g. 500g" required></td><td style="padding:6px 8px"><input type="number" name="variantStocks" class="form-control form-control-sm" placeholder="Qty" required></td><td style="padding:6px 8px"><input type="number" step="0.01" name="variantUnitPrices" class="form-control form-control-sm" placeholder="0.00" required></td><td style="padding:6px 8px"><input type="number" step="0.01" name="variantPrices" class="form-control form-control-sm" placeholder="0.00" required></td><td style="padding:6px 0 6px 8px;text-align:center"><button type="button" class="btn btn-outline-danger btn-sm remove-variant-btn w-100"><i class="bi bi-trash me-1"></i>Delete</button></td></tr>
+</tbody>
+</table>
+</div>
+<hr class="my-4">
+<div class="d-flex justify-content-end gap-2">
+<a th:href="@{/vendor/products}" class="btn btn-outline-secondary px-4" style="border-radius:8px;font-weight:600">Cancel</a>
+<button type="submit" class="btn btn-primary-custom px-5"><i class="bi bi-check2 me-1"></i> Save Product</button>
+</div>
+</form>
+</div>
+</main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+const container=document.getElementById('variants-container');
+const addBtn=document.getElementById('add-variant-btn');
+const basePriceInput=document.getElementById('price');
+function syncFromFirst(){const p=container.querySelector('input[name="variantPrices"]');if(p&&p.value)basePriceInput.value=p.value}
+container.addEventListener('input',function(e){if(e.target&&e.target.name==='variantPrices'){const f=container.querySelector('input[name="variantPrices"]');if(e.target===f)basePriceInput.value=e.target.value}});
+addBtn.addEventListener('click',function(){const fS=container.querySelector('input[name="variantPrices"]'),fC=container.querySelector('input[name="variantUnitPrices"]'),cS=fS?fS.value:'',cC=fC?fC.value:'';const t=document.createElement('tr');t.className='variant-row';t.innerHTML='<td style="padding:6px 8px 6px 0"><input type="text" name="variantSizes" class="form-control form-control-sm" placeholder="e.g. 500g" required></td><td style="padding:6px 8px"><input type="number" name="variantStocks" class="form-control form-control-sm" placeholder="Qty" required></td><td style="padding:6px 8px"><input type="number" step="0.01" name="variantUnitPrices" value="'+cC+'" class="form-control form-control-sm" placeholder="0.00" required></td><td style="padding:6px 8px"><input type="number" step="0.01" name="variantPrices" value="'+cS+'" class="form-control form-control-sm" placeholder="0.00" required></td><td style="padding:6px 0 6px 8px;text-align:center"><button type="button" class="btn btn-outline-danger btn-sm remove-variant-btn w-100"><i class="bi bi-trash me-1"></i>Delete</button></td>';container.appendChild(t)});
+container.addEventListener('click',function(e){if(e.target.classList.contains('remove-variant-btn')||e.target.closest('.remove-variant-btn')){const r=e.target.closest('.variant-row');if(container.querySelectorAll('.variant-row').length>1){r.remove();setTimeout(syncFromFirst,50)}else alert('A product must have at least one size variant!')}});
+const fi=document.getElementById('imageFile'),ip=document.getElementById('image-preview'),sl=document.getElementById('image-status-label');if(fi&&ip){fi.addEventListener('change',function(){const f=this.files[0];if(f){const r=new FileReader();r.onload=function(e){ip.src=e.target.result;if(sl)sl.textContent='Selected Photo Preview'};r.readAsDataURL(f)}})}
+syncFromFirst();
+});
+</script>
 </body>
-
 </html>

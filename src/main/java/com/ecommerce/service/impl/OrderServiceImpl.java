@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.ecommerce.entity.Coupon;
+
 @Service
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
@@ -74,13 +76,33 @@ public class OrderServiceImpl implements OrderService {
             inventoryTransactionRepository.save(tx);
         }
         
-        cartService.clearCart(userId);
-        
         return savedOrder;
     }
 
     @Override
+    public Order save(Order order) {
+        return orderRepository.save(order);
+    }
+
+    @Override
+    public Order applyCouponDiscount(Long orderId, Coupon coupon, BigDecimal discountAmount) {
+        Order order = findByIdSimple(orderId);
+        if (order != null) {
+            order.setCouponCode(coupon.getCode());
+            order.setDiscountAmount(discountAmount);
+            order.setTotalAmount(order.getTotalAmount().subtract(discountAmount));
+            return orderRepository.save(order);
+        }
+        return null;
+    }
+
+    @Override
     public Order findById(Long id) {
+        return orderRepository.findByIdWithItems(id).orElse(null);
+    }
+
+    @Override
+    public Order findByIdSimple(Long id) {
         return orderRepository.findById(id).orElse(null);
     }
 
@@ -102,6 +124,14 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Page<OrderItem> findVendorOrderItems(Long vendorId, Pageable pageable) {
         return orderItemRepository.findByVendorId(vendorId, pageable);
+    }
+
+    @Override
+    public void clearCartAfterPayment(Long orderId) {
+        Order order = findByIdSimple(orderId);
+        if (order != null && order.getUser() != null) {
+            cartService.clearCart(order.getUser().getId());
+        }
     }
 
     @Override

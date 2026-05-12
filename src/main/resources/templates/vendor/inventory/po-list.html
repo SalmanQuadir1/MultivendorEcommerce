@@ -99,7 +99,10 @@
                                 <button type="submit" class="btn btn-sm btn-outline-danger px-3"><i class="fas fa-times me-1"></i>Cancel</button>
                             </form>
                         </div>
-                        <span th:unless="${order.status.name() == 'PENDING'}" class="text-muted small" th:text="${order.status.name() == 'COMPLETED' ? 'Received on ' + #temporals.format(order.completedAt, 'dd-MM-yyyy') : 'Order Cancelled'}">-</span>
+                        <div th:unless="${order.status.name() == 'PENDING'}" class="d-flex justify-content-center gap-2">
+                            <a th:href="@{/invoice/purchase/{id}(id=${order.id})}" target="_blank" class="btn btn-sm btn-outline-info px-3"><i class="fas fa-file-invoice me-1"></i>Invoice</a>
+                            <span class="text-muted small align-self-center" th:text="${order.status.name() == 'COMPLETED' ? 'Received on ' + #temporals.format(order.completedAt, 'dd-MM-yyyy') : 'Cancelled'}">-</span>
+                        </div>
                     </td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(orders)}">

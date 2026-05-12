@@ -42,10 +42,15 @@ public class VendorInventoryController {
     public String updateStock(@PathVariable("id") Long variantId, 
                               @RequestParam("stock") Integer stock, 
                               @RequestParam("price") BigDecimal price,
+                              @RequestParam(value = "unitPrice", required = false) BigDecimal unitPrice,
                               @AuthenticationPrincipal CustomUserDetails userDetails) {
         ProductVariant variant = productVariantRepository.findById(variantId).orElse(null);
         if (variant != null && variant.getProduct().getVendor().getId().equals(userDetails.getId())) {
             
+            if (unitPrice != null) {
+                variant.setUnitPrice(unitPrice);
+            }
+
             // Log Price Change History if price is modified
             if (price != null && (variant.getPrice() == null || price.compareTo(variant.getPrice()) != 0)) {
                 User user = userRepository.findById(userDetails.getId()).orElse(null);

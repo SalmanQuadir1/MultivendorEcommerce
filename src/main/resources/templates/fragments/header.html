@@ -173,10 +173,20 @@
                 <!-- Navigation Items -->
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-1">
                     <li class="nav-item">
+                        <a class="nav-link nav-link-custom" th:href="@{/}">Home</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link nav-link-custom" th:href="@{/products}">Shop All</a>
                     </li>
-                    <li class="nav-item" th:each="cat : ${@categoryServiceImpl.findAll()}" th:if="${catStat.index < 4}">
-                        <a class="nav-link nav-link-custom" th:href="@{/products(categoryId=${cat.id})}" th:text="${cat.name}">Category</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link nav-link-custom dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            Categories
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-premium">
+                            <li th:each="cat : ${@categoryServiceImpl.findAll()}">
+                                <a class="dropdown-item rounded-2 py-2" th:href="@{/products(categoryId=${cat.id})}" th:text="${cat.name}">Category</a>
+                            </li>
+                        </ul>
                     </li>
                 </ul>
 

@@ -219,6 +219,7 @@
                             <th class="text-center">Qty</th>
                             <th class="text-center">Total Price</th>
                             <th class="text-center">Order Status</th>
+                            <th class="text-center">Invoice</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -245,9 +246,12 @@
                             <td class="text-center">
                                 <span th:class="'modern-badge badge-' + ${item.order.status.name() == 'PAID' ? 'success' : (item.order.status.name() == 'DELIVERED' ? 'info' : (item.order.status.name() == 'CANCELLED' ? 'danger' : 'warning'))}" th:text="${item.order.status}">Status</span>
                             </td>
+                            <td class="text-center">
+                                <a th:href="@{/invoice/sale/{id}(id=${item.order.id})}" target="_blank" class="btn btn-sm btn-outline-info px-2" style="font-size:.8rem"><i class="bi bi-file-earmark-text"></i></a>
+                            </td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(orderItems)}">
-                            <td colspan="6" class="text-center py-5 text-muted">
+                            <td colspan="7" class="text-center py-5 text-muted">
                                 <i class="bi bi-cart-x fs-1 mb-3 text-light"></i>
                                 <h5>No orders yet</h5>
                                 <p>When customers buy your products, they will appear here.</p>
